@@ -15,7 +15,9 @@ function DriverHistory() {
 
   if (!user) return null;
 
-  const completedBatches = batches.filter((b) => b.driverId === user.id && b.status === "Completed");
+  const completedBatches = batches.filter(
+    (b) => b.driverId === user.id && (b.status === "Delivered" || (b.status as string) === "Completed"),
+  );
 
   return (
     <div className="space-y-6">
@@ -35,7 +37,7 @@ function DriverHistory() {
                   <div>
                     <div className="flex items-center gap-3">
                       <p className="font-mono text-lg font-semibold text-primary">{batch.id}</p>
-                      <Badge variant="outline">Completed</Badge>
+                      <Badge variant="outline" className="text-green-600 border-green-300">Delivered</Badge>
                     </div>
                     <p className="mt-2 text-sm text-muted-foreground">
                       {batchOrders.length} order{batchOrders.length !== 1 ? "s" : ""} • {batch.totalQuantity} kg
@@ -54,11 +56,11 @@ function DriverHistory() {
                   </div>
                   <div>
                     <p className="text-xs font-medium text-muted-foreground">Distance</p>
-                    <p className="mt-1 font-medium text-foreground">—</p>
+                    <p className="mt-1 font-medium text-foreground">{batch.distanceKm} km</p>
                   </div>
                   <div>
                     <p className="text-xs font-medium text-muted-foreground">Status</p>
-                    <p className="mt-1 font-medium text-green-600">Completed</p>
+                    <p className="mt-1 font-medium text-green-600">Delivered</p>
                   </div>
                 </div>
 

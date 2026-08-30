@@ -4,19 +4,24 @@ import { cn } from "@/lib/utils";
 
 export function DashboardCard({
   label,
+  title,
   value,
   hint,
   icon: Icon,
   tone = "primary",
+  tint,
   className,
 }: {
-  label: string;
+  label?: string;
+  title?: string;
   value: string | number;
   hint?: string;
   icon: LucideIcon;
   tone?: "primary" | "leaf" | "info" | "warning" | "muted";
+  tint?: string;
   className?: string;
 }) {
+  const displayLabel = label ?? title ?? "";
   const tones: Record<string, string> = {
     primary: "bg-primary/10 text-primary",
     leaf: "bg-leaf/20 text-primary",
@@ -27,7 +32,7 @@ export function DashboardCard({
   return (
     <div className={cn("surface-panel p-5", className)}>
       <div className="flex items-start justify-between gap-3">
-        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <p className="text-sm font-medium text-muted-foreground">{displayLabel}</p>
         <span className={cn("grid size-9 place-items-center rounded-lg", tones[tone])}>
           <Icon className="size-4.5" aria-hidden="true" />
         </span>

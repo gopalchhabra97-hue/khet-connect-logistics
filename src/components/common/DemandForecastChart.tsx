@@ -10,7 +10,15 @@ import {
 
 import type { ForecastPoint } from "@/types";
 
-export function DemandForecastChart({ data, unit = "kg" }: { data: ForecastPoint[]; unit?: string }) {
+export function DemandForecastChart({
+  data,
+  crop,
+  unit = "kg",
+}: {
+  data: ForecastPoint[];
+  crop?: string;
+  unit?: string;
+}) {
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">

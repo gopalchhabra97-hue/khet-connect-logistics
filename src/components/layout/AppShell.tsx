@@ -64,7 +64,7 @@ export const NAV: Record<Role, NavItem[]> = {
   driver: [
     { label: "Dashboard", to: "/driver", icon: LayoutDashboard },
     { label: "Assigned Deliveries", to: "/driver/deliveries", icon: Truck },
-    { label: "Route", to: "/driver/route", icon: Map },
+    { label: "Route", to: "/driver/show-route", icon: Map },
     { label: "Delivery History", to: "/driver/history", icon: ClipboardList },
     { label: "Profile", to: "/driver/profile", icon: UserIcon },
   ],
