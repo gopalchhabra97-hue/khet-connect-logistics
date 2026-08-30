@@ -43,6 +43,7 @@ import { Route as FarmerProfileRouteImport } from './routes/farmer/profile'
 import { Route as BuyerOrdersOrderIdRouteImport } from './routes/buyer/orders/$orderId'
 import { Route as FarmerOrdersOrderIdRouteImport } from './routes/farmer/orders/$orderId'
 import { Route as FarmerProductsNewRouteImport } from './routes/farmer/products/new'
+import { Route as FarmerProductsProductIdEditRouteImport } from './routes/farmer/products/$productId/edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -214,6 +215,12 @@ const FarmerProductsNewRoute = FarmerProductsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => FarmerProductsRoute,
 } as any)
+const FarmerProductsProductIdEditRoute =
+  FarmerProductsProductIdEditRouteImport.update({
+    id: '/$productId/edit',
+    path: '/$productId/edit',
+    getParentRoute: () => FarmerProductsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -250,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
   '/farmer/orders/$orderId': typeof FarmerOrdersOrderIdRoute
   '/farmer/products/new': typeof FarmerProductsNewRoute
+  '/farmer/products/$productId/edit': typeof FarmerProductsProductIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -282,6 +290,7 @@ export interface FileRoutesByTo {
   '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
   '/farmer/orders/$orderId': typeof FarmerOrdersOrderIdRoute
   '/farmer/products/new': typeof FarmerProductsNewRoute
+  '/farmer/products/$productId/edit': typeof FarmerProductsProductIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -319,6 +328,7 @@ export interface FileRoutesById {
   '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
   '/farmer/orders/$orderId': typeof FarmerOrdersOrderIdRoute
   '/farmer/products/new': typeof FarmerProductsNewRoute
+  '/farmer/products/$productId/edit': typeof FarmerProductsProductIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -357,6 +367,7 @@ export interface FileRouteTypes {
     | '/buyer/orders/$orderId'
     | '/farmer/orders/$orderId'
     | '/farmer/products/new'
+    | '/farmer/products/$productId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -389,6 +400,7 @@ export interface FileRouteTypes {
     | '/buyer/orders/$orderId'
     | '/farmer/orders/$orderId'
     | '/farmer/products/new'
+    | '/farmer/products/$productId/edit'
   id:
     | '__root__'
     | '/'
@@ -425,6 +437,7 @@ export interface FileRouteTypes {
     | '/buyer/orders/$orderId'
     | '/farmer/orders/$orderId'
     | '/farmer/products/new'
+    | '/farmer/products/$productId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -677,6 +690,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FarmerProductsNewRouteImport
       parentRoute: typeof FarmerProductsRoute
     }
+    '/farmer/products/$productId/edit': {
+      id: '/farmer/products/$productId/edit'
+      path: '/$productId/edit'
+      fullPath: '/farmer/products/$productId/edit'
+      preLoaderRoute: typeof FarmerProductsProductIdEditRouteImport
+      parentRoute: typeof FarmerProductsRoute
+    }
   }
 }
 
@@ -769,10 +789,12 @@ const FarmerOrdersRouteWithChildren = FarmerOrdersRoute._addFileChildren(
 
 interface FarmerProductsRouteChildren {
   FarmerProductsNewRoute: typeof FarmerProductsNewRoute
+  FarmerProductsProductIdEditRoute: typeof FarmerProductsProductIdEditRoute
 }
 
 const FarmerProductsRouteChildren: FarmerProductsRouteChildren = {
   FarmerProductsNewRoute: FarmerProductsNewRoute,
+  FarmerProductsProductIdEditRoute: FarmerProductsProductIdEditRoute,
 }
 
 const FarmerProductsRouteWithChildren = FarmerProductsRoute._addFileChildren(

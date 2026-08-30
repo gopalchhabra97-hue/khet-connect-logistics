@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useMatches } from "@tanstack/react-router";
 import { Plus, Trash2, Edit2, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -27,8 +27,20 @@ export const Route = createFileRoute("/farmer/products")({
 function FarmerProducts() {
   const { user, products, deleteProduct, toggleAvailability } = useDemo();
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
+  const matches = useMatches();
 
   if (!user) return null;
+
+  // If a child route is active (new or edit), render it instead of the list
+  const isChildRouteActive = matches.some(
+    (m) =>
+      m.routeId === "/farmer/products/new" ||
+      m.routeId === "/farmer/products/$productId/edit",
+  );
+
+  if (isChildRouteActive) {
+    return <Outlet />;
+  }
 
   const farmerProducts = productsService.listBySeller(products, user.id);
 
