@@ -1,7 +1,7 @@
-import logo from "@/assets/khetsetu-logo.jpg.asset.json";
+import logoImage from "@/assets/khetsetu-logo.jpg";
 import { cn } from "@/lib/utils";
 
-export const LOGO_URL = logo.url;
+export const LOGO_URL = logoImage;
 
 export function Logo({
   className,
@@ -19,7 +19,7 @@ export function Logo({
         )}
       >
         <img
-          src={logo.url}
+          src={logoImage}
           alt="KHETSETU logo — a farmer with a tablet in a leaf emblem"
           className="h-full w-[280%] max-w-none -translate-x-[9%] object-cover"
         />
@@ -28,9 +28,9 @@ export function Logo({
   }
   return (
     <img
-      src={logo.url}
+      src={logoImage}
       alt="KHETSETU — Connecting Supply, Demand & Logistics. Powered by CodeAxis"
-      className={cn("rounded-xl object-contain", className)}
+      className={cn("w-full max-w-4xl rounded-xl object-contain", className)}
     />
   );
 }

@@ -10,12 +10,68 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as BuyerRouteImport } from './routes/buyer'
+import { Route as DriverRouteRouteImport } from './routes/driver/route'
+import { Route as DriverRouteImport } from './routes/driver'
+import { Route as FarmerRouteImport } from './routes/farmer'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
+import { Route as AdminBuyersRouteImport } from './routes/admin/buyers'
+import { Route as AdminFarmersRouteImport } from './routes/admin/farmers'
+import { Route as AdminFleetRouteImport } from './routes/admin/fleet'
+import { Route as AdminLogisticsRouteImport } from './routes/admin/logistics'
+import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
+import { Route as AdminProductsRouteImport } from './routes/admin/products'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
+import { Route as BuyerIndexRouteImport } from './routes/buyer/index'
+import { Route as BuyerMarketplaceRouteImport } from './routes/buyer/marketplace'
+import { Route as BuyerOrdersRouteImport } from './routes/buyer/orders'
+import { Route as BuyerProfileRouteImport } from './routes/buyer/profile'
+import { Route as BuyerTrackingRouteImport } from './routes/buyer/tracking'
+import { Route as DriverIndexRouteImport } from './routes/driver/index'
+import { Route as DriverDeliveriesRouteImport } from './routes/driver/deliveries'
+import { Route as DriverHistoryRouteImport } from './routes/driver/history'
+import { Route as DriverProfileRouteImport } from './routes/driver/profile'
+import { Route as FarmerIndexRouteImport } from './routes/farmer/index'
+import { Route as FarmerForecastRouteImport } from './routes/farmer/forecast'
+import { Route as FarmerOrdersRouteImport } from './routes/farmer/orders'
+import { Route as FarmerProductsRouteImport } from './routes/farmer/products'
+import { Route as FarmerProfileRouteImport } from './routes/farmer/profile'
+import { Route as BuyerOrdersOrderIdRouteImport } from './routes/buyer/orders/$orderId'
+import { Route as FarmerOrdersOrderIdRouteImport } from './routes/farmer/orders/$orderId'
+import { Route as FarmerProductsNewRouteImport } from './routes/farmer/products/new'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BuyerRoute = BuyerRouteImport.update({
+  id: '/buyer',
+  path: '/buyer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DriverRouteRoute = DriverRouteRouteImport.update({
+  id: '/driver',
+  path: '/driver',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DriverRoute = DriverRouteImport.update({
+  id: '/driver',
+  path: '/driver',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FarmerRoute = FarmerRouteImport.update({
+  id: '/farmer',
+  path: '/farmer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -28,33 +84,350 @@ const RegisterRoute = RegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBuyersRoute = AdminBuyersRouteImport.update({
+  id: '/buyers',
+  path: '/buyers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminFarmersRoute = AdminFarmersRouteImport.update({
+  id: '/farmers',
+  path: '/farmers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminFleetRoute = AdminFleetRouteImport.update({
+  id: '/fleet',
+  path: '/fleet',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLogisticsRoute = AdminLogisticsRouteImport.update({
+  id: '/logistics',
+  path: '/logistics',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminProductsRoute = AdminProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const BuyerIndexRoute = BuyerIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BuyerRoute,
+} as any)
+const BuyerMarketplaceRoute = BuyerMarketplaceRouteImport.update({
+  id: '/marketplace',
+  path: '/marketplace',
+  getParentRoute: () => BuyerRoute,
+} as any)
+const BuyerOrdersRoute = BuyerOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => BuyerRoute,
+} as any)
+const BuyerProfileRoute = BuyerProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => BuyerRoute,
+} as any)
+const BuyerTrackingRoute = BuyerTrackingRouteImport.update({
+  id: '/tracking',
+  path: '/tracking',
+  getParentRoute: () => BuyerRoute,
+} as any)
+const DriverIndexRoute = DriverIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DriverRoute,
+} as any)
+const DriverDeliveriesRoute = DriverDeliveriesRouteImport.update({
+  id: '/deliveries',
+  path: '/deliveries',
+  getParentRoute: () => DriverRoute,
+} as any)
+const DriverHistoryRoute = DriverHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => DriverRoute,
+} as any)
+const DriverProfileRoute = DriverProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => DriverRoute,
+} as any)
+const FarmerIndexRoute = FarmerIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => FarmerRoute,
+} as any)
+const FarmerForecastRoute = FarmerForecastRouteImport.update({
+  id: '/forecast',
+  path: '/forecast',
+  getParentRoute: () => FarmerRoute,
+} as any)
+const FarmerOrdersRoute = FarmerOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => FarmerRoute,
+} as any)
+const FarmerProductsRoute = FarmerProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => FarmerRoute,
+} as any)
+const FarmerProfileRoute = FarmerProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => FarmerRoute,
+} as any)
+const BuyerOrdersOrderIdRoute = BuyerOrdersOrderIdRouteImport.update({
+  id: '/$orderId',
+  path: '/$orderId',
+  getParentRoute: () => BuyerOrdersRoute,
+} as any)
+const FarmerOrdersOrderIdRoute = FarmerOrdersOrderIdRouteImport.update({
+  id: '/$orderId',
+  path: '/$orderId',
+  getParentRoute: () => FarmerOrdersRoute,
+} as any)
+const FarmerProductsNewRoute = FarmerProductsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => FarmerProductsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/driver': typeof DriverRouteWithChildren
+  '/admin': typeof AdminRouteWithChildren
+  '/buyer': typeof BuyerRouteWithChildren
+  '/farmer': typeof FarmerRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/buyers': typeof AdminBuyersRoute
+  '/admin/farmers': typeof AdminFarmersRoute
+  '/admin/fleet': typeof AdminFleetRoute
+  '/admin/logistics': typeof AdminLogisticsRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/products': typeof AdminProductsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/buyer/marketplace': typeof BuyerMarketplaceRoute
+  '/buyer/orders': typeof BuyerOrdersRouteWithChildren
+  '/buyer/profile': typeof BuyerProfileRoute
+  '/buyer/tracking': typeof BuyerTrackingRoute
+  '/driver/deliveries': typeof DriverDeliveriesRoute
+  '/driver/history': typeof DriverHistoryRoute
+  '/driver/profile': typeof DriverProfileRoute
+  '/farmer/forecast': typeof FarmerForecastRoute
+  '/farmer/orders': typeof FarmerOrdersRouteWithChildren
+  '/farmer/products': typeof FarmerProductsRouteWithChildren
+  '/farmer/profile': typeof FarmerProfileRoute
+  '/admin/': typeof AdminIndexRoute
+  '/buyer/': typeof BuyerIndexRoute
+  '/driver/': typeof DriverIndexRoute
+  '/farmer/': typeof FarmerIndexRoute
+  '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
+  '/farmer/orders/$orderId': typeof FarmerOrdersOrderIdRoute
+  '/farmer/products/new': typeof FarmerProductsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/driver': typeof DriverIndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/buyers': typeof AdminBuyersRoute
+  '/admin/farmers': typeof AdminFarmersRoute
+  '/admin/fleet': typeof AdminFleetRoute
+  '/admin/logistics': typeof AdminLogisticsRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/products': typeof AdminProductsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/buyer/marketplace': typeof BuyerMarketplaceRoute
+  '/buyer/orders': typeof BuyerOrdersRouteWithChildren
+  '/buyer/profile': typeof BuyerProfileRoute
+  '/buyer/tracking': typeof BuyerTrackingRoute
+  '/driver/deliveries': typeof DriverDeliveriesRoute
+  '/driver/history': typeof DriverHistoryRoute
+  '/driver/profile': typeof DriverProfileRoute
+  '/farmer/forecast': typeof FarmerForecastRoute
+  '/farmer/orders': typeof FarmerOrdersRouteWithChildren
+  '/farmer/products': typeof FarmerProductsRouteWithChildren
+  '/farmer/profile': typeof FarmerProfileRoute
+  '/admin': typeof AdminIndexRoute
+  '/buyer': typeof BuyerIndexRoute
+  '/farmer': typeof FarmerIndexRoute
+  '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
+  '/farmer/orders/$orderId': typeof FarmerOrdersOrderIdRoute
+  '/farmer/products/new': typeof FarmerProductsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/driver': typeof DriverRouteWithChildren
+  '/admin': typeof AdminRouteWithChildren
+  '/buyer': typeof BuyerRouteWithChildren
+  '/farmer': typeof FarmerRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/buyers': typeof AdminBuyersRoute
+  '/admin/farmers': typeof AdminFarmersRoute
+  '/admin/fleet': typeof AdminFleetRoute
+  '/admin/logistics': typeof AdminLogisticsRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/products': typeof AdminProductsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/buyer/marketplace': typeof BuyerMarketplaceRoute
+  '/buyer/orders': typeof BuyerOrdersRouteWithChildren
+  '/buyer/profile': typeof BuyerProfileRoute
+  '/buyer/tracking': typeof BuyerTrackingRoute
+  '/driver/deliveries': typeof DriverDeliveriesRoute
+  '/driver/history': typeof DriverHistoryRoute
+  '/driver/profile': typeof DriverProfileRoute
+  '/farmer/forecast': typeof FarmerForecastRoute
+  '/farmer/orders': typeof FarmerOrdersRouteWithChildren
+  '/farmer/products': typeof FarmerProductsRouteWithChildren
+  '/farmer/profile': typeof FarmerProfileRoute
+  '/admin/': typeof AdminIndexRoute
+  '/buyer/': typeof BuyerIndexRoute
+  '/driver/': typeof DriverIndexRoute
+  '/farmer/': typeof FarmerIndexRoute
+  '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
+  '/farmer/orders/$orderId': typeof FarmerOrdersOrderIdRoute
+  '/farmer/products/new': typeof FarmerProductsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/register'
+  fullPaths:
+    | '/'
+    | '/driver'
+    | '/admin'
+    | '/buyer'
+    | '/farmer'
+    | '/login'
+    | '/register'
+    | '/admin/analytics'
+    | '/admin/buyers'
+    | '/admin/farmers'
+    | '/admin/fleet'
+    | '/admin/logistics'
+    | '/admin/orders'
+    | '/admin/products'
+    | '/admin/settings'
+    | '/buyer/marketplace'
+    | '/buyer/orders'
+    | '/buyer/profile'
+    | '/buyer/tracking'
+    | '/driver/deliveries'
+    | '/driver/history'
+    | '/driver/profile'
+    | '/farmer/forecast'
+    | '/farmer/orders'
+    | '/farmer/products'
+    | '/farmer/profile'
+    | '/admin/'
+    | '/buyer/'
+    | '/driver/'
+    | '/farmer/'
+    | '/buyer/orders/$orderId'
+    | '/farmer/orders/$orderId'
+    | '/farmer/products/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/register'
-  id: '__root__' | '/' | '/login' | '/register'
+  to:
+    | '/'
+    | '/driver'
+    | '/login'
+    | '/register'
+    | '/admin/analytics'
+    | '/admin/buyers'
+    | '/admin/farmers'
+    | '/admin/fleet'
+    | '/admin/logistics'
+    | '/admin/orders'
+    | '/admin/products'
+    | '/admin/settings'
+    | '/buyer/marketplace'
+    | '/buyer/orders'
+    | '/buyer/profile'
+    | '/buyer/tracking'
+    | '/driver/deliveries'
+    | '/driver/history'
+    | '/driver/profile'
+    | '/farmer/forecast'
+    | '/farmer/orders'
+    | '/farmer/products'
+    | '/farmer/profile'
+    | '/admin'
+    | '/buyer'
+    | '/farmer'
+    | '/buyer/orders/$orderId'
+    | '/farmer/orders/$orderId'
+    | '/farmer/products/new'
+  id:
+    | '__root__'
+    | '/'
+    | '/driver'
+    | '/admin'
+    | '/buyer'
+    | '/farmer'
+    | '/login'
+    | '/register'
+    | '/admin/analytics'
+    | '/admin/buyers'
+    | '/admin/farmers'
+    | '/admin/fleet'
+    | '/admin/logistics'
+    | '/admin/orders'
+    | '/admin/products'
+    | '/admin/settings'
+    | '/buyer/marketplace'
+    | '/buyer/orders'
+    | '/buyer/profile'
+    | '/buyer/tracking'
+    | '/driver/deliveries'
+    | '/driver/history'
+    | '/driver/profile'
+    | '/farmer/forecast'
+    | '/farmer/orders'
+    | '/farmer/products'
+    | '/farmer/profile'
+    | '/admin/'
+    | '/buyer/'
+    | '/driver/'
+    | '/farmer/'
+    | '/buyer/orders/$orderId'
+    | '/farmer/orders/$orderId'
+    | '/farmer/products/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DriverRouteRoute: typeof DriverRouteRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  BuyerRoute: typeof BuyerRouteWithChildren
+  DriverRoute: typeof DriverRouteWithChildren
+  FarmerRoute: typeof FarmerRouteWithChildren
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
 }
@@ -66,6 +439,41 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/buyer': {
+      id: '/buyer'
+      path: '/buyer'
+      fullPath: '/buyer'
+      preLoaderRoute: typeof BuyerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/driver': {
+      id: '/driver'
+      path: '/driver'
+      fullPath: '/driver'
+      preLoaderRoute: typeof DriverRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/driver': {
+      id: '/driver'
+      path: '/driver'
+      fullPath: '/driver'
+      preLoaderRoute: typeof DriverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/farmer': {
+      id: '/farmer'
+      path: '/farmer'
+      fullPath: '/farmer'
+      preLoaderRoute: typeof FarmerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -82,11 +490,314 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/buyers': {
+      id: '/admin/buyers'
+      path: '/buyers'
+      fullPath: '/admin/buyers'
+      preLoaderRoute: typeof AdminBuyersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/farmers': {
+      id: '/admin/farmers'
+      path: '/farmers'
+      fullPath: '/admin/farmers'
+      preLoaderRoute: typeof AdminFarmersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/fleet': {
+      id: '/admin/fleet'
+      path: '/fleet'
+      fullPath: '/admin/fleet'
+      preLoaderRoute: typeof AdminFleetRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/logistics': {
+      id: '/admin/logistics'
+      path: '/logistics'
+      fullPath: '/admin/logistics'
+      preLoaderRoute: typeof AdminLogisticsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/products': {
+      id: '/admin/products'
+      path: '/products'
+      fullPath: '/admin/products'
+      preLoaderRoute: typeof AdminProductsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/buyer/': {
+      id: '/buyer/'
+      path: '/'
+      fullPath: '/buyer/'
+      preLoaderRoute: typeof BuyerIndexRouteImport
+      parentRoute: typeof BuyerRoute
+    }
+    '/buyer/marketplace': {
+      id: '/buyer/marketplace'
+      path: '/marketplace'
+      fullPath: '/buyer/marketplace'
+      preLoaderRoute: typeof BuyerMarketplaceRouteImport
+      parentRoute: typeof BuyerRoute
+    }
+    '/buyer/orders': {
+      id: '/buyer/orders'
+      path: '/orders'
+      fullPath: '/buyer/orders'
+      preLoaderRoute: typeof BuyerOrdersRouteImport
+      parentRoute: typeof BuyerRoute
+    }
+    '/buyer/profile': {
+      id: '/buyer/profile'
+      path: '/profile'
+      fullPath: '/buyer/profile'
+      preLoaderRoute: typeof BuyerProfileRouteImport
+      parentRoute: typeof BuyerRoute
+    }
+    '/buyer/tracking': {
+      id: '/buyer/tracking'
+      path: '/tracking'
+      fullPath: '/buyer/tracking'
+      preLoaderRoute: typeof BuyerTrackingRouteImport
+      parentRoute: typeof BuyerRoute
+    }
+    '/driver/': {
+      id: '/driver/'
+      path: '/'
+      fullPath: '/driver/'
+      preLoaderRoute: typeof DriverIndexRouteImport
+      parentRoute: typeof DriverRoute
+    }
+    '/driver/deliveries': {
+      id: '/driver/deliveries'
+      path: '/deliveries'
+      fullPath: '/driver/deliveries'
+      preLoaderRoute: typeof DriverDeliveriesRouteImport
+      parentRoute: typeof DriverRoute
+    }
+    '/driver/history': {
+      id: '/driver/history'
+      path: '/history'
+      fullPath: '/driver/history'
+      preLoaderRoute: typeof DriverHistoryRouteImport
+      parentRoute: typeof DriverRoute
+    }
+    '/driver/profile': {
+      id: '/driver/profile'
+      path: '/profile'
+      fullPath: '/driver/profile'
+      preLoaderRoute: typeof DriverProfileRouteImport
+      parentRoute: typeof DriverRoute
+    }
+    '/farmer/': {
+      id: '/farmer/'
+      path: '/'
+      fullPath: '/farmer/'
+      preLoaderRoute: typeof FarmerIndexRouteImport
+      parentRoute: typeof FarmerRoute
+    }
+    '/farmer/forecast': {
+      id: '/farmer/forecast'
+      path: '/forecast'
+      fullPath: '/farmer/forecast'
+      preLoaderRoute: typeof FarmerForecastRouteImport
+      parentRoute: typeof FarmerRoute
+    }
+    '/farmer/orders': {
+      id: '/farmer/orders'
+      path: '/orders'
+      fullPath: '/farmer/orders'
+      preLoaderRoute: typeof FarmerOrdersRouteImport
+      parentRoute: typeof FarmerRoute
+    }
+    '/farmer/products': {
+      id: '/farmer/products'
+      path: '/products'
+      fullPath: '/farmer/products'
+      preLoaderRoute: typeof FarmerProductsRouteImport
+      parentRoute: typeof FarmerRoute
+    }
+    '/farmer/profile': {
+      id: '/farmer/profile'
+      path: '/profile'
+      fullPath: '/farmer/profile'
+      preLoaderRoute: typeof FarmerProfileRouteImport
+      parentRoute: typeof FarmerRoute
+    }
+    '/buyer/orders/$orderId': {
+      id: '/buyer/orders/$orderId'
+      path: '/$orderId'
+      fullPath: '/buyer/orders/$orderId'
+      preLoaderRoute: typeof BuyerOrdersOrderIdRouteImport
+      parentRoute: typeof BuyerOrdersRoute
+    }
+    '/farmer/orders/$orderId': {
+      id: '/farmer/orders/$orderId'
+      path: '/$orderId'
+      fullPath: '/farmer/orders/$orderId'
+      preLoaderRoute: typeof FarmerOrdersOrderIdRouteImport
+      parentRoute: typeof FarmerOrdersRoute
+    }
+    '/farmer/products/new': {
+      id: '/farmer/products/new'
+      path: '/new'
+      fullPath: '/farmer/products/new'
+      preLoaderRoute: typeof FarmerProductsNewRouteImport
+      parentRoute: typeof FarmerProductsRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminBuyersRoute: typeof AdminBuyersRoute
+  AdminFarmersRoute: typeof AdminFarmersRoute
+  AdminFleetRoute: typeof AdminFleetRoute
+  AdminLogisticsRoute: typeof AdminLogisticsRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminProductsRoute: typeof AdminProductsRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminBuyersRoute: AdminBuyersRoute,
+  AdminFarmersRoute: AdminFarmersRoute,
+  AdminFleetRoute: AdminFleetRoute,
+  AdminLogisticsRoute: AdminLogisticsRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
+  AdminProductsRoute: AdminProductsRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface BuyerOrdersRouteChildren {
+  BuyerOrdersOrderIdRoute: typeof BuyerOrdersOrderIdRoute
+}
+
+const BuyerOrdersRouteChildren: BuyerOrdersRouteChildren = {
+  BuyerOrdersOrderIdRoute: BuyerOrdersOrderIdRoute,
+}
+
+const BuyerOrdersRouteWithChildren = BuyerOrdersRoute._addFileChildren(
+  BuyerOrdersRouteChildren,
+)
+
+interface BuyerRouteChildren {
+  BuyerMarketplaceRoute: typeof BuyerMarketplaceRoute
+  BuyerOrdersRoute: typeof BuyerOrdersRouteWithChildren
+  BuyerProfileRoute: typeof BuyerProfileRoute
+  BuyerTrackingRoute: typeof BuyerTrackingRoute
+  BuyerIndexRoute: typeof BuyerIndexRoute
+}
+
+const BuyerRouteChildren: BuyerRouteChildren = {
+  BuyerMarketplaceRoute: BuyerMarketplaceRoute,
+  BuyerOrdersRoute: BuyerOrdersRouteWithChildren,
+  BuyerProfileRoute: BuyerProfileRoute,
+  BuyerTrackingRoute: BuyerTrackingRoute,
+  BuyerIndexRoute: BuyerIndexRoute,
+}
+
+const BuyerRouteWithChildren = BuyerRoute._addFileChildren(BuyerRouteChildren)
+
+interface DriverRouteChildren {
+  DriverDeliveriesRoute: typeof DriverDeliveriesRoute
+  DriverHistoryRoute: typeof DriverHistoryRoute
+  DriverProfileRoute: typeof DriverProfileRoute
+  DriverIndexRoute: typeof DriverIndexRoute
+}
+
+const DriverRouteChildren: DriverRouteChildren = {
+  DriverDeliveriesRoute: DriverDeliveriesRoute,
+  DriverHistoryRoute: DriverHistoryRoute,
+  DriverProfileRoute: DriverProfileRoute,
+  DriverIndexRoute: DriverIndexRoute,
+}
+
+const DriverRouteWithChildren =
+  DriverRoute._addFileChildren(DriverRouteChildren)
+
+interface FarmerOrdersRouteChildren {
+  FarmerOrdersOrderIdRoute: typeof FarmerOrdersOrderIdRoute
+}
+
+const FarmerOrdersRouteChildren: FarmerOrdersRouteChildren = {
+  FarmerOrdersOrderIdRoute: FarmerOrdersOrderIdRoute,
+}
+
+const FarmerOrdersRouteWithChildren = FarmerOrdersRoute._addFileChildren(
+  FarmerOrdersRouteChildren,
+)
+
+interface FarmerProductsRouteChildren {
+  FarmerProductsNewRoute: typeof FarmerProductsNewRoute
+}
+
+const FarmerProductsRouteChildren: FarmerProductsRouteChildren = {
+  FarmerProductsNewRoute: FarmerProductsNewRoute,
+}
+
+const FarmerProductsRouteWithChildren = FarmerProductsRoute._addFileChildren(
+  FarmerProductsRouteChildren,
+)
+
+interface FarmerRouteChildren {
+  FarmerForecastRoute: typeof FarmerForecastRoute
+  FarmerOrdersRoute: typeof FarmerOrdersRouteWithChildren
+  FarmerProductsRoute: typeof FarmerProductsRouteWithChildren
+  FarmerProfileRoute: typeof FarmerProfileRoute
+  FarmerIndexRoute: typeof FarmerIndexRoute
+}
+
+const FarmerRouteChildren: FarmerRouteChildren = {
+  FarmerForecastRoute: FarmerForecastRoute,
+  FarmerOrdersRoute: FarmerOrdersRouteWithChildren,
+  FarmerProductsRoute: FarmerProductsRouteWithChildren,
+  FarmerProfileRoute: FarmerProfileRoute,
+  FarmerIndexRoute: FarmerIndexRoute,
+}
+
+const FarmerRouteWithChildren =
+  FarmerRoute._addFileChildren(FarmerRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DriverRouteRoute: DriverRouteRoute,
+  AdminRoute: AdminRouteWithChildren,
+  BuyerRoute: BuyerRouteWithChildren,
+  DriverRoute: DriverRouteWithChildren,
+  FarmerRoute: FarmerRouteWithChildren,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
 }
