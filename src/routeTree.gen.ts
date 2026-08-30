@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as BuyerRouteImport } from './routes/buyer'
-import { Route as DriverRouteRouteImport } from './routes/driver/route'
 import { Route as DriverRouteImport } from './routes/driver'
 import { Route as FarmerRouteImport } from './routes/farmer'
 import { Route as LoginRouteImport } from './routes/login'
@@ -35,6 +34,7 @@ import { Route as DriverIndexRouteImport } from './routes/driver/index'
 import { Route as DriverDeliveriesRouteImport } from './routes/driver/deliveries'
 import { Route as DriverHistoryRouteImport } from './routes/driver/history'
 import { Route as DriverProfileRouteImport } from './routes/driver/profile'
+import { Route as DriverShowRouteRouteImport } from './routes/driver/show-route'
 import { Route as FarmerIndexRouteImport } from './routes/farmer/index'
 import { Route as FarmerForecastRouteImport } from './routes/farmer/forecast'
 import { Route as FarmerOrdersRouteImport } from './routes/farmer/orders'
@@ -57,11 +57,6 @@ const AdminRoute = AdminRouteImport.update({
 const BuyerRoute = BuyerRouteImport.update({
   id: '/buyer',
   path: '/buyer',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DriverRouteRoute = DriverRouteRouteImport.update({
-  id: '/driver',
-  path: '/driver',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DriverRoute = DriverRouteImport.update({
@@ -174,6 +169,11 @@ const DriverProfileRoute = DriverProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => DriverRoute,
 } as any)
+const DriverShowRouteRoute = DriverShowRouteRouteImport.update({
+  id: '/show-route',
+  path: '/show-route',
+  getParentRoute: () => DriverRoute,
+} as any)
 const FarmerIndexRoute = FarmerIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -217,9 +217,9 @@ const FarmerProductsNewRoute = FarmerProductsNewRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/driver': typeof DriverRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/buyer': typeof BuyerRouteWithChildren
+  '/driver': typeof DriverRouteWithChildren
   '/farmer': typeof FarmerRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
@@ -238,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/driver/deliveries': typeof DriverDeliveriesRoute
   '/driver/history': typeof DriverHistoryRoute
   '/driver/profile': typeof DriverProfileRoute
+  '/driver/show-route': typeof DriverShowRouteRoute
   '/farmer/forecast': typeof FarmerForecastRoute
   '/farmer/orders': typeof FarmerOrdersRouteWithChildren
   '/farmer/products': typeof FarmerProductsRouteWithChildren
@@ -252,7 +253,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/driver': typeof DriverIndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -270,12 +270,14 @@ export interface FileRoutesByTo {
   '/driver/deliveries': typeof DriverDeliveriesRoute
   '/driver/history': typeof DriverHistoryRoute
   '/driver/profile': typeof DriverProfileRoute
+  '/driver/show-route': typeof DriverShowRouteRoute
   '/farmer/forecast': typeof FarmerForecastRoute
   '/farmer/orders': typeof FarmerOrdersRouteWithChildren
   '/farmer/products': typeof FarmerProductsRouteWithChildren
   '/farmer/profile': typeof FarmerProfileRoute
   '/admin': typeof AdminIndexRoute
   '/buyer': typeof BuyerIndexRoute
+  '/driver': typeof DriverIndexRoute
   '/farmer': typeof FarmerIndexRoute
   '/buyer/orders/$orderId': typeof BuyerOrdersOrderIdRoute
   '/farmer/orders/$orderId': typeof FarmerOrdersOrderIdRoute
@@ -284,9 +286,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/driver': typeof DriverRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/buyer': typeof BuyerRouteWithChildren
+  '/driver': typeof DriverRouteWithChildren
   '/farmer': typeof FarmerRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
@@ -305,6 +307,7 @@ export interface FileRoutesById {
   '/driver/deliveries': typeof DriverDeliveriesRoute
   '/driver/history': typeof DriverHistoryRoute
   '/driver/profile': typeof DriverProfileRoute
+  '/driver/show-route': typeof DriverShowRouteRoute
   '/farmer/forecast': typeof FarmerForecastRoute
   '/farmer/orders': typeof FarmerOrdersRouteWithChildren
   '/farmer/products': typeof FarmerProductsRouteWithChildren
@@ -321,9 +324,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/driver'
     | '/admin'
     | '/buyer'
+    | '/driver'
     | '/farmer'
     | '/login'
     | '/register'
@@ -342,6 +345,7 @@ export interface FileRouteTypes {
     | '/driver/deliveries'
     | '/driver/history'
     | '/driver/profile'
+    | '/driver/show-route'
     | '/farmer/forecast'
     | '/farmer/orders'
     | '/farmer/products'
@@ -356,7 +360,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/driver'
     | '/login'
     | '/register'
     | '/admin/analytics'
@@ -374,12 +377,14 @@ export interface FileRouteTypes {
     | '/driver/deliveries'
     | '/driver/history'
     | '/driver/profile'
+    | '/driver/show-route'
     | '/farmer/forecast'
     | '/farmer/orders'
     | '/farmer/products'
     | '/farmer/profile'
     | '/admin'
     | '/buyer'
+    | '/driver'
     | '/farmer'
     | '/buyer/orders/$orderId'
     | '/farmer/orders/$orderId'
@@ -387,9 +392,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/driver'
     | '/admin'
     | '/buyer'
+    | '/driver'
     | '/farmer'
     | '/login'
     | '/register'
@@ -408,6 +413,7 @@ export interface FileRouteTypes {
     | '/driver/deliveries'
     | '/driver/history'
     | '/driver/profile'
+    | '/driver/show-route'
     | '/farmer/forecast'
     | '/farmer/orders'
     | '/farmer/products'
@@ -423,7 +429,6 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DriverRouteRoute: typeof DriverRouteRoute
   AdminRoute: typeof AdminRouteWithChildren
   BuyerRoute: typeof BuyerRouteWithChildren
   DriverRoute: typeof DriverRouteWithChildren
@@ -453,13 +458,6 @@ declare module '@tanstack/react-router' {
       path: '/buyer'
       fullPath: '/buyer'
       preLoaderRoute: typeof BuyerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/driver': {
-      id: '/driver'
-      path: '/driver'
-      fullPath: '/driver'
-      preLoaderRoute: typeof DriverRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/driver': {
@@ -616,6 +614,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DriverProfileRouteImport
       parentRoute: typeof DriverRoute
     }
+    '/driver/show-route': {
+      id: '/driver/show-route'
+      path: '/show-route'
+      fullPath: '/driver/show-route'
+      preLoaderRoute: typeof DriverShowRouteRouteImport
+      parentRoute: typeof DriverRoute
+    }
     '/farmer/': {
       id: '/farmer/'
       path: '/'
@@ -735,6 +740,7 @@ interface DriverRouteChildren {
   DriverDeliveriesRoute: typeof DriverDeliveriesRoute
   DriverHistoryRoute: typeof DriverHistoryRoute
   DriverProfileRoute: typeof DriverProfileRoute
+  DriverShowRouteRoute: typeof DriverShowRouteRoute
   DriverIndexRoute: typeof DriverIndexRoute
 }
 
@@ -742,6 +748,7 @@ const DriverRouteChildren: DriverRouteChildren = {
   DriverDeliveriesRoute: DriverDeliveriesRoute,
   DriverHistoryRoute: DriverHistoryRoute,
   DriverProfileRoute: DriverProfileRoute,
+  DriverShowRouteRoute: DriverShowRouteRoute,
   DriverIndexRoute: DriverIndexRoute,
 }
 
@@ -793,7 +800,6 @@ const FarmerRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DriverRouteRoute: DriverRouteRoute,
   AdminRoute: AdminRouteWithChildren,
   BuyerRoute: BuyerRouteWithChildren,
   DriverRoute: DriverRouteWithChildren,

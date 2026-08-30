@@ -14,23 +14,21 @@ export const Route = createFileRoute("/driver/")({
 });
 
 function DriverDashboard() {
-  const { user, batches, vehicles, drivers } = useDemo();
+  const { user, batches, vehicles, drivers, orders } = useDemo();
 
   if (!user) return null;
 
-  // Get assigned batches for this driver
   const assignedBatches = batches.filter((b) => b.driverId === user.id);
 
-  // Get driver info
   const driverInfo = drivers.find((d) => d.id === user.id);
   const vehicleInfo = driverInfo?.vehicleId ? vehicles.find((v) => v.id === driverInfo.vehicleId) : null;
 
-  // Today's deliveries (first 3 orders in assigned batches)
-  const todaysDeliveries = assignedBatches.flatMap((b) => b.orders).slice(0, 3);
+  const todaysDeliveries = assignedBatches
+    .flatMap((b) => orders.filter((o) => b.orderIds.includes(o.id)))
+    .slice(0, 3);
 
   return (
     <div className="space-y-6">
-      {/* Welcome section */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Welcome, {user.name}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -38,7 +36,6 @@ function DriverDashboard() {
         </p>
       </div>
 
-      {/* Status alert */}
       {assignedBatches.length === 0 && (
         <Alert>
           <AlertCircle className="h-4 w-4" />
@@ -52,7 +49,6 @@ function DriverDashboard() {
         </Alert>
       )}
 
-      {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <DashboardCard
           title="Availability"
@@ -80,7 +76,6 @@ function DriverDashboard() {
         />
       </div>
 
-      {/* Quick actions */}
       <div className="flex flex-wrap gap-3">
         <Link to="/driver/deliveries">
           <Button>View Assigned Deliveries</Button>
@@ -95,12 +90,13 @@ function DriverDashboard() {
         </Link>
       </div>
 
-      {/* Assigned batches section */}
       {assignedBatches.length > 0 && (
         <div className="space-y-4 rounded-lg border border-border bg-card p-6">
           <h2 className="text-lg font-semibold text-foreground">Assigned Batches</h2>
           <div className="space-y-3">
-            {assignedBatches.map((batch) => (
+            {assignedBatches.map((batch) => {
+              const batchOrderCount = orders.filter((o) => batch.orderIds.includes(o.id)).length;
+              return (
               <div key={batch.id} className="flex items-start justify-between rounded-lg border border-border bg-white/50 p-4">
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-2">
@@ -110,7 +106,7 @@ function DriverDashboard() {
                   <div className="grid grid-cols-3 gap-4 text-xs text-muted-foreground">
                     <div>
                       <p className="text-foreground/70">Load</p>
-                      <p className="font-medium text-foreground">{batch.load} kg</p>
+                      <p className="font-medium text-foreground">{batch.totalQuantity} kg</p>
                     </div>
                     <div>
                       <p className="text-foreground/70">Stops</p>
@@ -118,7 +114,7 @@ function DriverDashboard() {
                     </div>
                     <div>
                       <p className="text-foreground/70">Orders</p>
-                      <p className="font-medium text-foreground">{batch.orders.length}</p>
+                      <p className="font-medium text-foreground">{batchOrderCount}</p>
                     </div>
                   </div>
                 </div>
@@ -128,12 +124,11 @@ function DriverDashboard() {
                   </Button>
                 </Link>
               </div>
-            ))}
+            )})}
           </div>
         </div>
       )}
 
-      {/* Vehicle info */}
       {vehicleInfo && (
         <div className="rounded-lg border border-border bg-card p-6">
           <h2 className="text-lg font-semibold text-foreground">Assigned Vehicle</h2>
@@ -146,7 +141,7 @@ function DriverDashboard() {
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Capacity</p>
               <p className="font-medium text-foreground">{vehicleInfo.capacity} kg</p>
-              <p className="text-xs text-muted-foreground">Utilization: {assignedBatches.length > 0 ? Math.round((assignedBatches[0]?.load ?? 0) / vehicleInfo.capacity * 100) : 0}%</p>
+              <p className="text-xs text-muted-foreground">Utilization: {assignedBatches.length > 0 ? Math.round((assignedBatches[0]?.totalQuantity ?? 0) / vehicleInfo.capacity * 100) : 0}%</p>
             </div>
           </div>
         </div>

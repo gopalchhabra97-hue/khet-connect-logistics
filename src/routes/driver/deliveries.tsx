@@ -13,14 +13,12 @@ export const Route = createFileRoute("/driver/deliveries")({
 });
 
 function DriverDeliveries() {
-  const { user, batches } = useDemo();
+  const { user, batches, orders } = useDemo();
 
   if (!user) return null;
 
-  // Get assigned batches for this driver
   const assignedBatches = batches.filter((b) => b.driverId === user.id);
   
-  // Group by status
   const batchesByStatus = {
     assigned: assignedBatches.filter((b) => b.status === "Assigned"),
     loading: assignedBatches.filter((b) => b.status === "Loading"),
@@ -29,7 +27,7 @@ function DriverDeliveries() {
   };
 
   const totalBatches = assignedBatches.length;
-  const totalLoad = assignedBatches.reduce((sum, b) => sum + b.load, 0);
+  const totalLoad = assignedBatches.reduce((sum, b) => sum + b.totalQuantity, 0);
 
   return (
     <div className="space-y-6">
@@ -38,7 +36,6 @@ function DriverDeliveries() {
         <p className="mt-1 text-sm text-muted-foreground">Manage your delivery batches and shipments</p>
       </div>
 
-      {/* Summary cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="p-4">
           <p className="text-sm text-muted-foreground">Total Batches</p>
@@ -54,7 +51,6 @@ function DriverDeliveries() {
         </Card>
       </div>
 
-      {/* Batches by status */}
       {totalBatches > 0 ? (
         <Tabs defaultValue="assigned" className="space-y-4">
           <TabsList>
@@ -71,7 +67,9 @@ function DriverDeliveries() {
                   <p className="text-muted-foreground">No {status} batches</p>
                 </Card>
               ) : (
-                batchesByStatus[status as keyof typeof batchesByStatus].map((batch) => (
+                batchesByStatus[status as keyof typeof batchesByStatus].map((batch) => {
+                  const batchOrders = orders.filter((o) => batch.orderIds.includes(o.id));
+                  return (
                   <Card key={batch.id} className="p-6">
                     <div className="space-y-4">
                       <div className="flex items-start justify-between">
@@ -81,7 +79,7 @@ function DriverDeliveries() {
                             <Badge>{batch.status}</Badge>
                           </div>
                           <p className="mt-2 text-sm text-muted-foreground">
-                            {batch.orders.length} order{batch.orders.length !== 1 ? "s" : ""} • {batch.load} kg
+                            {batchOrders.length} order{batchOrders.length !== 1 ? "s" : ""} • {batch.totalQuantity} kg
                           </p>
                         </div>
                         <Link to="/driver/route">
@@ -91,7 +89,6 @@ function DriverDeliveries() {
                         </Link>
                       </div>
 
-                      {/* Pickup and delivery info */}
                       <div className="grid grid-cols-2 gap-4 border-t border-border pt-4">
                         <div>
                           <p className="text-xs font-medium text-muted-foreground">Pickup</p>
@@ -103,26 +100,25 @@ function DriverDeliveries() {
                         </div>
                       </div>
 
-                      {/* Orders in batch */}
                       <div className="border-t border-border pt-4">
                         <p className="text-sm font-medium text-foreground mb-2">Orders</p>
                         <div className="space-y-2">
-                          {batch.orders.slice(0, 3).map((order, idx) => (
+                          {batchOrders.slice(0, 3).map((order, idx) => (
                             <div key={idx} className="flex justify-between text-sm text-muted-foreground">
-                              <span>{order.product} (from {order.seller})</span>
+                              <span>{order.product} (from {order.pickup})</span>
                               <span className="font-medium text-foreground">{order.quantity} kg</span>
                             </div>
                           ))}
-                          {batch.orders.length > 3 && (
+                          {batchOrders.length > 3 && (
                             <p className="text-xs text-muted-foreground pt-2">
-                              +{batch.orders.length - 3} more order{batch.orders.length - 3 !== 1 ? "s" : ""}
+                              +{batchOrders.length - 3} more order{batchOrders.length - 3 !== 1 ? "s" : ""}
                             </p>
                           )}
                         </div>
                       </div>
                     </div>
                   </Card>
-                ))
+                )})
               )}
             </TabsContent>
           ))}

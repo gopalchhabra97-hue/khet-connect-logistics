@@ -16,10 +16,8 @@ export const Route = createFileRoute("/admin/logistics")({
 function LogisticsPage() {
   const { orders, batches } = useDemo();
 
-  // Get accepted orders that aren't yet grouped into batches
   const ungroupedOrders = orders.filter((o) => o.status === "Accepted");
   
-  // Group by pickup location
   const ordersByPickup: Record<string, typeof orders> = {};
   for (const order of ungroupedOrders) {
     if (!ordersByPickup[order.pickup]) {
@@ -35,7 +33,6 @@ function LogisticsPage() {
         <p className="mt-1 text-sm text-muted-foreground">Order grouping and delivery batch planning</p>
       </div>
 
-      {/* Alerts */}
       {ungroupedOrders.length > 0 && (
         <Alert>
           <AlertCircle className="h-4 w-4" />
@@ -45,7 +42,6 @@ function LogisticsPage() {
         </Alert>
       )}
 
-      {/* Summary */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="p-4">
           <p className="text-sm text-muted-foreground">Accepted Orders</p>
@@ -61,7 +57,6 @@ function LogisticsPage() {
         </Card>
       </div>
 
-      {/* Orders by pickup location */}
       {Object.keys(ordersByPickup).length > 0 ? (
         <div className="space-y-4">
           {Object.entries(ordersByPickup).map(([pickup, pickupOrders]) => {
@@ -84,7 +79,6 @@ function LogisticsPage() {
                     </div>
                   </div>
 
-                  {/* Orders list */}
                   <div className="border-t border-border pt-4 space-y-2">
                     <p className="text-sm font-medium text-foreground">Orders</p>
                     {pickupOrders.map((order) => (
@@ -99,7 +93,6 @@ function LogisticsPage() {
                     ))}
                   </div>
 
-                  {/* Recommendation */}
                   <div className="border-t border-border pt-4">
                     <p className="text-xs font-medium text-muted-foreground mb-2">RECOMMENDATION</p>
                     <p className="text-sm text-foreground bg-blue-50/50 rounded p-3">
@@ -110,7 +103,6 @@ function LogisticsPage() {
                     </p>
                   </div>
 
-                  {/* Action (Demo info) */}
                   <div className="pt-2">
                     <p className="text-xs text-muted-foreground">
                       In production: Click "Create Batch" to generate a delivery batch with automatic vehicle and driver assignment.
@@ -128,11 +120,12 @@ function LogisticsPage() {
         </Card>
       )}
 
-      {/* Active batches */}
       {batches.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-foreground">Active Delivery Batches</h2>
-          {batches.map((batch) => (
+          {batches.map((batch) => {
+            const batchOrderCount = orders.filter((o) => batch.orderIds.includes(o.id)).length;
+            return (
             <Card key={batch.id} className="p-6">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -144,7 +137,7 @@ function LogisticsPage() {
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">Load</p>
-                    <p className="font-medium text-foreground">{batch.load} kg</p>
+                    <p className="font-medium text-foreground">{batch.totalQuantity} kg</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Route</p>
@@ -152,12 +145,12 @@ function LogisticsPage() {
                   </div>
                   <div>
                     <p className="text-muted-foreground">Orders</p>
-                    <p className="font-medium text-foreground">{batch.orders.length}</p>
+                    <p className="font-medium text-foreground">{batchOrderCount}</p>
                   </div>
                 </div>
               </div>
             </Card>
-          ))}
+          )})}
         </div>
       )}
     </div>

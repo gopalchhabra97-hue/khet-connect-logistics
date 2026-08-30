@@ -11,11 +11,10 @@ export const Route = createFileRoute("/driver/history")({
 });
 
 function DriverHistory() {
-  const { user, batches } = useDemo();
+  const { user, batches, orders } = useDemo();
 
   if (!user) return null;
 
-  // Get completed batches for this driver
   const completedBatches = batches.filter((b) => b.driverId === user.id && b.status === "Completed");
 
   return (
@@ -27,7 +26,9 @@ function DriverHistory() {
 
       {completedBatches.length > 0 ? (
         <div className="space-y-4">
-          {completedBatches.map((batch) => (
+          {completedBatches.map((batch) => {
+            const batchOrders = orders.filter((o) => batch.orderIds.includes(o.id));
+            return (
             <Card key={batch.id} className="p-6">
               <div className="space-y-4">
                 <div className="flex items-start justify-between">
@@ -37,7 +38,7 @@ function DriverHistory() {
                       <Badge variant="outline">Completed</Badge>
                     </div>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      {batch.orders.length} order{batch.orders.length !== 1 ? "s" : ""} • {batch.load} kg
+                      {batchOrders.length} order{batchOrders.length !== 1 ? "s" : ""} • {batch.totalQuantity} kg
                     </p>
                   </div>
                 </div>
@@ -61,11 +62,10 @@ function DriverHistory() {
                   </div>
                 </div>
 
-                {/* Orders summary */}
                 <div className="border-t border-border pt-4">
                   <p className="text-sm font-medium text-foreground mb-2">Orders</p>
                   <div className="space-y-1 text-xs text-muted-foreground">
-                    {batch.orders.map((order, idx) => (
+                    {batchOrders.map((order, idx) => (
                       <p key={idx}>
                         • {order.product} ({order.quantity} kg) → {order.delivery}
                       </p>
@@ -74,7 +74,7 @@ function DriverHistory() {
                 </div>
               </div>
             </Card>
-          ))}
+          )})}
         </div>
       ) : (
         <Card className="p-8 text-center">

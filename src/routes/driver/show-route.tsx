@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Truck, Clock, Package } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { useDemo } from "@/context/DemoStore";
 import { routeDistance } from "@/context/DemoStore";
 
-export const Route = createFileRoute("/driver")({
+export const Route = createFileRoute("/driver/show-route")({
   head: () => ({
     meta: [{ title: "Route — KHETSETU" }],
   }),
@@ -13,11 +13,10 @@ export const Route = createFileRoute("/driver")({
 });
 
 function DriverRoute() {
-  const { user, batches, drivers, vehicles } = useDemo();
+  const { user, batches, drivers, vehicles, orders } = useDemo();
 
   if (!user) return null;
 
-  // Get first assigned batch (primary route)
   const assignedBatch = batches.find((b) => b.driverId === user.id);
   const driverInfo = drivers.find((d) => d.id === user.id);
   const vehicleInfo = driverInfo?.vehicleId ? vehicles.find((v) => v.id === driverInfo.vehicleId) : null;
@@ -37,10 +36,11 @@ function DriverRoute() {
     );
   }
 
-  // Calculate route metrics
+  const batchOrders = orders.filter((o) => assignedBatch.orderIds.includes(o.id));
+
   const allStops = [assignedBatch.pickup, ...assignedBatch.stops];
   const totalDistance = routeDistance(assignedBatch.pickup, assignedBatch.stops);
-  const estimatedTime = Math.ceil(totalDistance / 60); // Assume 60 km/hr average
+  const estimatedTime = Math.ceil(totalDistance / 60);
 
   return (
     <div className="space-y-6">
@@ -49,7 +49,6 @@ function DriverRoute() {
         <p className="mt-1 text-sm text-muted-foreground">Delivery route for batch {assignedBatch.id}</p>
       </div>
 
-      {/* Route metrics */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="p-4">
           <p className="text-sm text-muted-foreground">Total Distance</p>
@@ -61,7 +60,7 @@ function DriverRoute() {
         </Card>
         <Card className="p-4">
           <p className="text-sm text-muted-foreground">Total Load</p>
-          <p className="mt-1 text-2xl font-bold text-foreground">{assignedBatch.load} kg</p>
+          <p className="mt-1 text-2xl font-bold text-foreground">{assignedBatch.totalQuantity} kg</p>
         </Card>
         <Card className="p-4">
           <p className="text-sm text-muted-foreground">Stops</p>
@@ -69,12 +68,10 @@ function DriverRoute() {
         </Card>
       </div>
 
-      {/* Route visualization */}
       <Card className="overflow-hidden">
         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
           <h2 className="mb-6 text-lg font-semibold text-foreground">Route Map</h2>
           
-          {/* Text-based route map */}
           <div className="space-y-4">
             {allStops.map((stop, idx) => (
               <div key={idx}>
@@ -102,7 +99,6 @@ function DriverRoute() {
         </div>
       </Card>
 
-      {/* Batch details */}
       <Card className="p-6">
         <h2 className="mb-4 text-lg font-semibold text-foreground">Batch Details</h2>
         <div className="grid gap-6 md:grid-cols-2">
@@ -130,11 +126,10 @@ function DriverRoute() {
         </div>
       </Card>
 
-      {/* Orders in route */}
       <Card className="p-6">
         <h2 className="mb-4 text-lg font-semibold text-foreground">Orders in Route</h2>
         <div className="space-y-3">
-          {assignedBatch.orders.map((order, idx) => (
+          {batchOrders.map((order, idx) => (
             <div key={idx} className="rounded-lg border border-border bg-white/50 p-4">
               <div className="flex items-start justify-between">
                 <div>
@@ -143,7 +138,7 @@ function DriverRoute() {
                     <Badge variant="secondary" className="text-xs">{order.quantity} kg</Badge>
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    From: <span className="font-medium text-foreground">{order.seller}</span>
+                    From: <span className="font-medium text-foreground">{order.pickup}</span>
                   </p>
                   <p className="text-sm text-muted-foreground">
                     To: <span className="font-medium text-foreground">{order.delivery}</span>
