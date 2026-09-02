@@ -5,9 +5,15 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from backend/.env
+backend_dir = Path(__file__).parent.parent / "backend"
+env_path = backend_dir / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
+else:
+    load_dotenv()
 
 # this is the Alembic Config object, which provides
 # the values of the [alembic] section of the .ini file

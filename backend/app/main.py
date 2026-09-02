@@ -1,16 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import sys
-from pathlib import Path
-
-# Add backend directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.db.base import Base
 from app.db.database import engine
 from app import models  # noqa: F401 - Import models to register them with Base
 
-# Create database tables
+# Create database tables if they don't exist
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="KHETSETU API")
