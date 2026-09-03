@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
 
@@ -406,3 +406,61 @@ class MandiSyncTriggerResponse(BaseModel):
     records_fetched: int
     records_inserted: int
     status: str
+
+
+# Matching Schemas (Phase 8)
+class MatchingSearchRequest(BaseModel):
+    commodity: str
+    quantity: float = Field(..., gt=0, description="Required quantity in specified unit")
+    unit: str = Field("kg", description="Unit of measurement (e.g. kg, quintal)")
+    max_price: Optional[float] = Field(None, gt=0, description="Buyer's target maximum price per unit")
+    delivery_location: Optional[str] = Field(None, description="Buyer delivery hub / location")
+    required_by_days: Optional[int] = Field(None, ge=1, le=30, description="Required delivery window in days")
+    min_quality_score: Optional[float] = Field(None, ge=0.0, le=5.0, description="Optional minimum quality score threshold")
+    preferred_variety: Optional[str] = Field(None, description="Optional crop variety preference")
+
+
+class MatchingScoreBreakdown(BaseModel):
+    commodity: float
+    quantity: float
+    price: float
+    location: float
+    delivery: float
+    quality: float
+    total: float
+
+
+class MatchingResultItem(BaseModel):
+    product_id: str
+    farmer_id: str
+    farmer_name: str
+    commodity: str
+    category: str
+    available_quantity: float
+    requested_quantity: float
+    fulfillable_quantity: float
+    unit: str
+    farmer_price: float
+    buyer_max_price: Optional[float] = None
+    mandi_reference_price: Optional[float] = None
+    mandi_status: str  # "live" | "stale" | "demo" | "unknown"
+    max_allowed_price: Optional[float] = None
+    match_score: int  # Rounded 0 - 100
+    match_score_raw: float  # Exact float score
+    fulfillment: str  # "full" | "partial" | "none"
+    location: str
+    delivery_location: Optional[str] = None
+    distance_km: Optional[float] = None
+    estimated_transportation_charge: Optional[float] = None
+    quality_score: float
+    verified: bool
+    score_breakdown: MatchingScoreBreakdown
+    explanation: List[str]
+    image: Optional[str] = None
+
+
+class MatchingSearchResponse(BaseModel):
+    matches: List[MatchingResultItem]
+    total_candidates_evaluated: int
+    buyer_requirements: MatchingSearchRequest
+    timestamp: datetime = Field(default_factory=datetime.utcnow)

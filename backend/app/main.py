@@ -13,6 +13,7 @@ from app.routers.drivers import router as drivers_router
 from app.routers.forecast import router as forecast_router
 from app.routers.payments import router as payments_router
 from app.routers.mandi import router as mandi_router
+from app.routers.matching import router as matching_router
 from app.services.mandi_price_service import sync_mandi_prices, get_sync_interval_hours
 from app.db.database import get_db_session
 import asyncio
@@ -48,6 +49,7 @@ app.include_router(drivers_router, prefix="/api/v1")
 app.include_router(forecast_router, prefix="/api/v1")
 app.include_router(payments_router, prefix="/api/v1")
 app.include_router(mandi_router, prefix="/api/v1")
+app.include_router(matching_router, prefix="/api/v1")
 
 
 async def periodic_mandi_sync():

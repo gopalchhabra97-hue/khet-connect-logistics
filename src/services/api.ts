@@ -647,6 +647,87 @@ export const mandiApi = {
   },
 };
 
+/* ---------------- Matching API (Phase 8) ---------------- */
+
+export interface ApiMatchingSearchRequest {
+  commodity: string;
+  quantity: number;
+  unit?: string;
+  max_price?: number | null;
+  delivery_location?: string | null;
+  required_by_days?: number | null;
+  min_quality_score?: number | null;
+  preferred_variety?: string | null;
+}
+
+export interface ApiMatchingScoreBreakdown {
+  commodity: number;
+  quantity: number;
+  price: number;
+  location: number;
+  delivery: number;
+  quality: number;
+  total: number;
+}
+
+export interface ApiMatchingResultItem {
+  product_id: string;
+  farmer_id: string;
+  farmer_name: string;
+  commodity: string;
+  category: string;
+  available_quantity: number;
+  requested_quantity: number;
+  fulfillable_quantity: number;
+  unit: string;
+  farmer_price: number;
+  buyer_max_price?: number | null;
+  mandi_reference_price?: number | null;
+  mandi_status: string;
+  max_allowed_price?: number | null;
+  match_score: number;
+  match_score_raw: number;
+  fulfillment: "full" | "partial" | "none";
+  location: string;
+  delivery_location?: string | null;
+  distance_km?: number | null;
+  estimated_transportation_charge?: number | null;
+  quality_score: number;
+  verified: boolean;
+  score_breakdown: ApiMatchingScoreBreakdown;
+  explanation: string[];
+  image?: string | null;
+}
+
+export interface ApiMatchingSearchResponse {
+  matches: ApiMatchingResultItem[];
+  total_candidates_evaluated: number;
+  buyer_requirements: ApiMatchingSearchRequest;
+  timestamp: string;
+}
+
+export const matchingApi = {
+  async search(requestData: ApiMatchingSearchRequest): Promise<ApiMatchingSearchResponse> {
+    return request<ApiMatchingSearchResponse>("/matching/search", {
+      method: "POST",
+      body: JSON.stringify(requestData),
+    });
+  },
+
+  async getProductMatch(
+    productId: string,
+    params?: { quantity?: number; max_price?: number; delivery_location?: string; required_by_days?: number }
+  ): Promise<ApiMatchingResultItem> {
+    const qs = new URLSearchParams();
+    if (params?.quantity) qs.set("quantity", String(params.quantity));
+    if (params?.max_price) qs.set("max_price", String(params.max_price));
+    if (params?.delivery_location) qs.set("delivery_location", params.delivery_location);
+    if (params?.required_by_days) qs.set("required_by_days", String(params.required_by_days));
+    const queryStr = qs.toString() ? `?${qs.toString()}` : "";
+    return request<ApiMatchingResultItem>(`/matching/product/${encodeURIComponent(productId)}${queryStr}`);
+  },
+};
+
 /* ---------------- Health Check ---------------- */
 
 export async function checkBackendHealth(): Promise<boolean> {
