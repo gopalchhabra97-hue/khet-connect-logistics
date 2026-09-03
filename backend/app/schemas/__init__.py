@@ -38,10 +38,26 @@ class ProductBase(BaseModel):
     available: bool = True
     harvest_date: Optional[str] = None
     verified: bool = False
+    image: Optional[str] = None
 
 
 class ProductCreate(ProductBase):
-    id: str
+    id: Optional[str] = None
+
+
+class ProductUpdate(BaseModel):
+    name: Optional[str] = None
+    category: Optional[str] = None
+    quantity: Optional[int] = None
+    unit: Optional[str] = None
+    price: Optional[float] = None
+    location: Optional[str] = None
+    seller_id: Optional[str] = None
+    seller_name: Optional[str] = None
+    available: Optional[bool] = None
+    harvest_date: Optional[str] = None
+    verified: Optional[bool] = None
+    image: Optional[str] = None
 
 
 class ProductResponse(ProductBase):
@@ -60,6 +76,31 @@ class OrderBase(BaseModel):
     product_id: str
     product_name: Optional[str] = None
     quantity: int
+    unit: Optional[str] = None
+    price_per_unit: Optional[float] = None
+    pickup_location: Optional[str] = None
+    delivery_location: str
+    order_date: Optional[str] = None
+    expected_delivery: Optional[str] = None
+    status: Optional[str] = "Pending"
+    batch_id: Optional[str] = None
+
+
+class OrderCreate(OrderBase):
+    id: Optional[str] = None
+
+
+class OrderStatusUpdate(BaseModel):
+    status: str
+
+
+class OrderResponse(BaseModel):
+    id: str
+    buyer_id: str
+    buyer_name: Optional[str] = None
+    product_id: str
+    product_name: Optional[str] = None
+    quantity: int
     unit: str
     price_per_unit: float
     pickup_location: str
@@ -68,14 +109,6 @@ class OrderBase(BaseModel):
     expected_delivery: Optional[str] = None
     status: str
     batch_id: Optional[str] = None
-
-
-class OrderCreate(OrderBase):
-    id: str
-
-
-class OrderResponse(OrderBase):
-    id: str
     created_at: datetime
     updated_at: datetime
 

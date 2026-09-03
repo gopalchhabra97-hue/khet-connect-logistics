@@ -5,6 +5,9 @@ from app.db.base import Base
 from app.db.database import engine
 from app import models  # noqa: F401 - Import models to register them with Base
 
+from app.routers.products import router as products_router
+from app.routers.orders import router as orders_router
+
 # Create database tables if they don't exist
 Base.metadata.create_all(bind=engine)
 
@@ -19,6 +22,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount API routers
+app.include_router(products_router, prefix="/api/v1")
+app.include_router(orders_router, prefix="/api/v1")
 
 
 @app.get("/")
@@ -39,3 +46,4 @@ async def health():
         "status": "ok",
         "service": "khetsetu-api"
     }
+
