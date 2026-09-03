@@ -13,7 +13,22 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    id: str
+    id: Optional[str] = None
+    password: Optional[str] = None
+
+
+class UserRegister(BaseModel):
+    name: str
+    email: str
+    password: str
+    role: str
+    org: Optional[str] = None
+    location: Optional[str] = None
+
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
 
 
 class UserResponse(UserBase):
@@ -23,6 +38,12 @@ class UserResponse(UserBase):
 
     class Config:
         from_attributes = True
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
 
 
 # Product Schemas
@@ -121,12 +142,20 @@ class VehicleBase(BaseModel):
     name: str
     registration: str
     capacity: int
-    status: str
+    status: str = "Available"
     base_location: str
 
 
 class VehicleCreate(VehicleBase):
-    id: str
+    id: Optional[str] = None
+
+
+class VehicleUpdate(BaseModel):
+    name: Optional[str] = None
+    registration: Optional[str] = None
+    capacity: Optional[int] = None
+    status: Optional[str] = None
+    base_location: Optional[str] = None
 
 
 class VehicleResponse(VehicleBase):
@@ -143,13 +172,22 @@ class DriverBase(BaseModel):
     name: str
     phone: str
     license: str
-    status: str
+    status: str = "Available"
     base_location: str
     vehicle_id: Optional[str] = None
 
 
 class DriverCreate(DriverBase):
-    id: str
+    id: Optional[str] = None
+
+
+class DriverUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    license: Optional[str] = None
+    status: Optional[str] = None
+    base_location: Optional[str] = None
+    vehicle_id: Optional[str] = None
 
 
 class DriverResponse(DriverBase):

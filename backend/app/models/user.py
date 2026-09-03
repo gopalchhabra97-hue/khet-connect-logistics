@@ -12,6 +12,7 @@ class User(Base):
     role = Column(String(50), nullable=False, index=True)  # farmer, buyer, driver, admin
     org = Column(String(255), nullable=True)
     location = Column(String(255), nullable=True)
+    password_hash = Column(String(255), nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
