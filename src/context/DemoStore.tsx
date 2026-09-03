@@ -19,7 +19,7 @@ import {
   seedProducts,
   seedVehicles,
 } from "@/data/mockData";
-import type {
+import {
   AppNotification,
   BatchStatus,
   DeliveryBatch,
@@ -30,6 +30,7 @@ import type {
   User,
   Vehicle,
 } from "@/types";
+import { productsApi, ordersApi } from "@/services/api";
 
 const STORAGE_KEY = "khetsetu-demo-state-v1";
 
@@ -68,18 +69,20 @@ export function routeDistance(pickup: string, stops: string[]): number {
 }
 
 interface DemoContextValue extends DemoState {
+  isBackendConnected: boolean;
+  syncFromBackend: () => Promise<void>;
   login: (email: string, role: Role) => User;
   logout: () => void;
-  addProduct: (p: Omit<Product, "id" | "sellerId" | "seller" | "verified">) => void;
-  updateProduct: (id: string, patch: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
-  toggleAvailability: (id: string) => void;
+  addProduct: (p: Omit<Product, "id" | "sellerId" | "seller" | "verified">) => Promise<Product | void> | void;
+  updateProduct: (id: string, patch: Partial<Product>) => Promise<Product | void> | void;
+  deleteProduct: (id: string) => Promise<void> | void;
+  toggleAvailability: (id: string) => Promise<void> | void;
   placeOrder: (input: {
     productId: string;
     quantity: number;
     delivery: string;
-  }) => Order | null;
-  setOrderStatus: (id: string, status: Order["status"]) => void;
+  }) => Promise<Order | null> | Order | null;
+  setOrderStatus: (id: string, status: Order["status"]) => Promise<void> | void;
   groupCompatibleOrders: () => DeliveryBatch | null;
   assignBatch: (batchId: string, vehicleId: string, driverId: string) => void;
   setBatchStatus: (batchId: string, status: BatchStatus) => void;
@@ -92,16 +95,43 @@ const DemoContext = createContext<DemoContextValue | null>(null);
 export function DemoProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<DemoState>(initialState);
   const [hydrated, setHydrated] = useState(false);
+  const [isBackendConnected, setIsBackendConnected] = useState(false);
+
+  const syncFromBackend = useCallback(async () => {
+    try {
+      const [remoteProducts, remoteOrders] = await Promise.all([
+        productsApi.list(),
+        ordersApi.list(),
+      ]);
+      setState((s) => ({
+        ...s,
+        products: remoteProducts,
+        orders: remoteOrders,
+      }));
+      setIsBackendConnected(true);
+    } catch (err) {
+      console.warn("FastAPI backend unavailable, using demo state fallback.", err);
+      setIsBackendConnected(false);
+    }
+  }, []);
 
   useEffect(() => {
+    let rawState: DemoState | null = null;
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setState(JSON.parse(raw) as DemoState);
+      if (raw) rawState = JSON.parse(raw) as DemoState;
     } catch {
       /* ignore corrupt demo state */
     }
+
+    if (rawState) {
+      setState(rawState);
+    }
     setHydrated(true);
-  }, []);
+
+    // Load primary data from FastAPI backend
+    void syncFromBackend();
+  }, [syncFromBackend]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -159,55 +189,141 @@ export function DemoProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => setState((s) => ({ ...s, user: null })), []);
 
-  const addProduct: DemoContextValue["addProduct"] = useCallback((p) => {
-    setState((s) => {
-      const id = `P-${s.counter + 1}`;
-      return {
-        ...s,
-        counter: s.counter + 1,
-        products: [
-          {
-            ...p,
-            id,
-            sellerId: s.user?.id ?? "U-F1",
-            seller: s.user?.org ?? "Green Valley FPO",
-            verified: false,
-          },
-          ...s.products,
-        ],
-      };
-    });
+  const addProduct: DemoContextValue["addProduct"] = useCallback(
+    async (p) => {
+      const sellerId = state.user?.id || "U-F1";
+      const sellerName = state.user?.org || state.user?.name || "Green Valley FPO";
+
+      try {
+        const created = await productsApi.create({
+          ...p,
+          sellerId,
+          seller: sellerName,
+        });
+        setState((s) => ({
+          ...s,
+          products: [created, ...s.products.filter((item) => item.id !== created.id)],
+        }));
+        setIsBackendConnected(true);
+        return created;
+      } catch (err) {
+        console.warn("Backend addProduct failed, falling back to local state:", err);
+        const id = `P-${state.counter + 1}`;
+        const fallback: Product = {
+          ...p,
+          id,
+          sellerId,
+          seller: sellerName,
+          verified: false,
+        };
+        setState((s) => ({
+          ...s,
+          counter: s.counter + 1,
+          products: [fallback, ...s.products],
+        }));
+        return fallback;
+      }
+    },
+    [state.user, state.counter],
+  );
+
+  const updateProduct: DemoContextValue["updateProduct"] = useCallback(
+    async (id, patch) => {
+      try {
+        const updated = await productsApi.update(id, patch);
+        setState((s) => ({
+          ...s,
+          products: s.products.map((p) => (p.id === id ? updated : p)),
+        }));
+        setIsBackendConnected(true);
+        return updated;
+      } catch (err) {
+        console.warn("Backend updateProduct failed, updating local state:", err);
+        setState((s) => ({
+          ...s,
+          products: s.products.map((p) => (p.id === id ? { ...p, ...patch } : p)),
+        }));
+      }
+    },
+    [],
+  );
+
+  const deleteProduct = useCallback(async (id: string) => {
+    try {
+      await productsApi.delete(id);
+      setState((s) => ({ ...s, products: s.products.filter((p) => p.id !== id) }));
+      setIsBackendConnected(true);
+    } catch (err: any) {
+      console.warn("Backend deleteProduct failed:", err);
+      toast.error(err.message || "Failed to delete product from database");
+      setState((s) => ({ ...s, products: s.products.filter((p) => p.id !== id) }));
+    }
   }, []);
 
-  const updateProduct: DemoContextValue["updateProduct"] = useCallback((id, patch) => {
-    setState((s) => ({
-      ...s,
-      products: s.products.map((p) => (p.id === id ? { ...p, ...patch } : p)),
-    }));
-  }, []);
+  const toggleAvailability = useCallback(
+    async (id: string) => {
+      const current = state.products.find((p) => p.id === id);
+      if (!current) return;
+      const nextAvailable = !current.available;
 
-  const deleteProduct = useCallback((id: string) => {
-    setState((s) => ({ ...s, products: s.products.filter((p) => p.id !== id) }));
-  }, []);
-
-  const toggleAvailability = useCallback((id: string) => {
-    setState((s) => ({
-      ...s,
-      products: s.products.map((p) => (p.id === id ? { ...p, available: !p.available } : p)),
-    }));
-  }, []);
+      try {
+        const updated = await productsApi.update(id, { available: nextAvailable });
+        setState((s) => ({
+          ...s,
+          products: s.products.map((p) => (p.id === id ? updated : p)),
+        }));
+        setIsBackendConnected(true);
+      } catch (err) {
+        console.warn("Backend toggleAvailability failed, updating local state:", err);
+        setState((s) => ({
+          ...s,
+          products: s.products.map((p) => (p.id === id ? { ...p, available: nextAvailable } : p)),
+        }));
+      }
+    },
+    [state.products],
+  );
 
   const placeOrder: DemoContextValue["placeOrder"] = useCallback(
-    ({ productId, quantity, delivery }) => {
-      let created: Order | null = null;
-      setState((s) => {
-        const product = s.products.find((p) => p.id === productId);
-        if (!product) return s;
-        const id = `#${s.counter + 1}`;
-        const order: Order = {
+    async ({ productId, quantity, delivery }) => {
+      const product = state.products.find((p) => p.id === productId);
+      if (!product) return null;
+
+      const buyerId = state.user?.id || "U-B1";
+      const buyerName = state.user?.org || state.user?.name || "FreshMart Retail";
+
+      try {
+        const created = await ordersApi.create({
+          buyerId,
+          buyerName,
+          productId,
+          quantity,
+          delivery,
+          unit: product.unit,
+          pricePerUnit: product.price,
+          pickup: product.location,
+        });
+
+        setState((s) => ({
+          ...s,
+          orders: [created, ...s.orders.filter((o) => o.id !== created.id)],
+        }));
+        setIsBackendConnected(true);
+
+        pushNotification(
+          "farmer",
+          "New order received",
+          `A buyer ordered ${quantity} ${product.unit} for ${delivery}. Awaiting your approval.`,
+          "info",
+        );
+        return created;
+      } catch (err) {
+        console.warn("Backend placeOrder failed, falling back to local order:", err);
+        const id = `#${state.counter + 1}`;
+        const localOrder: Order = {
           id,
-          buyer: s.user?.org ?? s.user?.name ?? "FreshMart Retail",
-          buyerId: s.user?.id ?? "U-B1",
+          buyer: buyerName,
+          buyerId,
           productId,
           product: product.name,
           quantity,
@@ -219,26 +335,42 @@ export function DemoProvider({ children }: { children: ReactNode }) {
           expectedDelivery: new Date(Date.now() + 3 * 864e5).toISOString().slice(0, 10),
           status: "Pending",
         };
-        created = order;
-        return { ...s, counter: s.counter + 1, orders: [order, ...s.orders] };
-      });
-      pushNotification(
-        "farmer",
-        "New order received",
-        `A buyer ordered ${quantity} kg for ${delivery}. Awaiting your approval.`,
-        "info",
-      );
-      return created;
+
+        setState((s) => ({
+          ...s,
+          counter: s.counter + 1,
+          orders: [localOrder, ...s.orders],
+        }));
+
+        pushNotification(
+          "farmer",
+          "New order received",
+          `A buyer ordered ${quantity} kg for ${delivery}. Awaiting your approval.`,
+          "info",
+        );
+        return localOrder;
+      }
     },
-    [pushNotification],
+    [state.products, state.user, state.counter, pushNotification],
   );
 
   const setOrderStatus = useCallback(
-    (id: string, status: Order["status"]) => {
-      setState((s) => ({
-        ...s,
-        orders: s.orders.map((o) => (o.id === id ? { ...o, status } : o)),
-      }));
+    async (id: string, status: Order["status"]) => {
+      try {
+        const updated = await ordersApi.updateStatus(id, status);
+        setState((s) => ({
+          ...s,
+          orders: s.orders.map((o) => (o.id === id ? updated : o)),
+        }));
+        setIsBackendConnected(true);
+      } catch (err) {
+        console.warn("Backend setOrderStatus failed, updating local state:", err);
+        setState((s) => ({
+          ...s,
+          orders: s.orders.map((o) => (o.id === id ? { ...o, status } : o)),
+        }));
+      }
+
       if (status === "Accepted") {
         pushNotification("buyer", "Order accepted", `Order ${id} was accepted by the farmer.`, "success");
       }
@@ -369,6 +501,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   const value = useMemo<DemoContextValue>(
     () => ({
       ...state,
+      isBackendConnected,
+      syncFromBackend,
       login,
       logout,
       addProduct,
@@ -385,6 +519,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     }),
     [
       state,
+      isBackendConnected,
+      syncFromBackend,
       login,
       logout,
       addProduct,

@@ -51,7 +51,7 @@ function AddProduct() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -62,7 +62,7 @@ function AddProduct() {
     setIsLoading(true);
 
     try {
-      addProduct({
+      await addProduct({
         name: formData.name,
         category: formData.category as any,
         quantity: parseInt(formData.quantity, 10),
@@ -78,7 +78,7 @@ function AddProduct() {
       });
 
       void navigate({ to: "/farmer/products" });
-    } catch (error) {
+    } catch {
       toast.error("Failed to add product. Please try again.");
     } finally {
       setIsLoading(false);

@@ -30,7 +30,7 @@ export function PlaceOrderModal({ onClose, onSuccess }: PlaceOrderModalProps) {
   const availableProducts = productsService.listAvailable(products);
   const selectedProduct = availableProducts.find((p) => p.id === selectedProductId);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!selectedProductId || !quantity || !deliveryLocation) {
@@ -53,7 +53,7 @@ export function PlaceOrderModal({ onClose, onSuccess }: PlaceOrderModalProps) {
 
     setIsLoading(true);
     try {
-      const order = placeOrder({
+      const order = await placeOrder({
         productId: selectedProductId,
         quantity: qty,
         delivery: deliveryLocation,

@@ -72,7 +72,7 @@ function EditProduct() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -83,7 +83,7 @@ function EditProduct() {
     setIsLoading(true);
 
     try {
-      updateProduct(productId, {
+      await updateProduct(productId, {
         name: formData.name,
         category: formData.category as "Vegetables" | "Fruits" | "Grains" | "Pulses",
         quantity: parseInt(formData.quantity, 10),
