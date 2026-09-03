@@ -344,3 +344,65 @@ class ForecastResponse(BaseModel):
     reason: str
     model: str
     generated_at: datetime
+
+
+# Mandi Price & Controlled Pricing Schemas
+class MandiPriceResponse(BaseModel):
+    id: str
+    commodity: str
+    market: str
+    state: str
+    district: Optional[str] = None
+    variety: Optional[str] = None
+    grade: Optional[str] = None
+    price_date: str
+    unit: str
+    min_price: Optional[float] = None
+    max_price: Optional[float] = None
+    modal_price: float
+    price_per_kg: float
+    source: str
+    source_resource_id: str
+    fetched_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class MandiReferenceResponse(BaseModel):
+    commodity: str
+    market: str
+    state: str
+    district: Optional[str] = None
+    variety: Optional[str] = None
+    grade: Optional[str] = None
+    price_date: str
+    modal_price: float
+    price_per_kg: float
+    unit: str
+    price_type_used: str  # "modal_price"
+    source: str
+    status: str  # "live" | "stale" | "demo"
+    max_markup_percent: float
+    max_allowed_price: float
+    freshness_hours: Optional[float] = None
+    explanation: str
+
+
+class MandiSyncStatusResponse(BaseModel):
+    last_successful_sync: Optional[datetime] = None
+    last_attempted_sync: Optional[datetime] = None
+    records_stored: int
+    last_sync_status: str  # "success" | "failed" | "idle" | "in_progress"
+    is_stale: bool
+    stale_after_hours: int
+    sync_interval_hours: int
+    has_api_key: bool
+    message: str
+
+
+class MandiSyncTriggerResponse(BaseModel):
+    message: str
+    records_fetched: int
+    records_inserted: int
+    status: str

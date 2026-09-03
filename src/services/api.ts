@@ -571,6 +571,82 @@ export const paymentsApi = {
   },
 };
 
+/* ---------------- Mandi Prices API ---------------- */
+
+export interface ApiMandiPrice {
+  id: string;
+  commodity: string;
+  market: string;
+  state: string;
+  district?: string | null;
+  variety?: string | null;
+  grade?: string | null;
+  price_date: string;
+  unit: string;
+  min_price?: number | null;
+  max_price?: number | null;
+  modal_price: number;
+  price_per_kg: number;
+  source: string;
+  source_resource_id: string;
+  fetched_at: string;
+}
+
+export interface ApiMandiReference {
+  commodity: string;
+  market: string;
+  state: string;
+  district?: string | null;
+  variety?: string | null;
+  grade?: string | null;
+  price_date: string;
+  modal_price: number;
+  price_per_kg: number;
+  unit: string;
+  price_type_used: string;
+  source: string;
+  status: "live" | "stale" | "demo";
+  max_markup_percent: number;
+  max_allowed_price: number;
+  freshness_hours?: number | null;
+  explanation: string;
+}
+
+export interface ApiMandiSyncStatus {
+  last_successful_sync?: string | null;
+  last_attempted_sync?: string | null;
+  records_stored: number;
+  last_sync_status: string;
+  is_stale: boolean;
+  stale_after_hours: number;
+  sync_interval_hours: number;
+  has_api_key: boolean;
+  message: string;
+}
+
+export const mandiApi = {
+  async getReferencePrice(commodity: string, location?: string, state?: string): Promise<ApiMandiReference> {
+    const params = new URLSearchParams();
+    if (location) params.set("location", location);
+    if (state) params.set("state", state);
+    const qs = params.toString() ? `?${params.toString()}` : "";
+    return request<ApiMandiReference>(`/mandi-prices/reference/${encodeURIComponent(commodity)}${qs}`);
+  },
+
+  async listLatest(state?: string): Promise<ApiMandiPrice[]> {
+    const qs = state ? `?state=${encodeURIComponent(state)}` : "";
+    return request<ApiMandiPrice[]>(`/mandi-prices/latest${qs}`);
+  },
+
+  async getStatus(): Promise<ApiMandiSyncStatus> {
+    return request<ApiMandiSyncStatus>("/mandi-prices/status");
+  },
+
+  async triggerSync(): Promise<{ message: string; records_fetched: number; records_inserted: number; status: string }> {
+    return request("/mandi-prices/sync", { method: "POST" });
+  },
+};
+
 /* ---------------- Health Check ---------------- */
 
 export async function checkBackendHealth(): Promise<boolean> {

@@ -10,6 +10,8 @@ from app.models.user import User
 from app.models.order import Order
 from app.schemas import ProductCreate, ProductResponse, ProductUpdate
 
+from app.services.mandi_price_service import validate_farmer_pricing
+
 router = APIRouter(prefix="/products", tags=["Products"])
 
 
@@ -78,6 +80,19 @@ def create_product(product_in: ProductCreate, db: Session = Depends(get_db_sessi
             detail=f"Product with id '{product_id}' already exists",
         )
 
+    # Enforce Controlled Farmer Pricing (+100% max markup over Mandi reference)
+    is_valid, ref_info, err_details = validate_farmer_pricing(
+        commodity=product_in.name,
+        entered_price=product_in.price,
+        location=product_in.location,
+        db=db,
+    )
+    if not is_valid and err_details:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=err_details["reason"],
+        )
+
     # Validate seller if user exists in db
     seller_name = product_in.seller_name
     seller = db.query(User).filter(User.id == product_in.seller_id).first()
@@ -123,6 +138,23 @@ def update_product(
     update_dict = product_in.model_dump(exclude_unset=True)
     if not update_dict:
         return product
+
+    # If price or commodity or location is updated, enforce Controlled Farmer Pricing
+    new_price = update_dict.get("price")
+    if new_price is not None:
+        target_name = update_dict.get("name", product.name)
+        target_loc = update_dict.get("location", product.location)
+        is_valid, ref_info, err_details = validate_farmer_pricing(
+            commodity=target_name,
+            entered_price=float(new_price),
+            location=target_loc,
+            db=db,
+        )
+        if not is_valid and err_details:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=err_details["reason"],
+            )
 
     for field, value in update_dict.items():
         setattr(product, field, value)

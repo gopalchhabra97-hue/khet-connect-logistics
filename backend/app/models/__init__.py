@@ -4,6 +4,7 @@ from .order import Order, OrderItem, Payment, DriverPayout
 from .vehicle import Vehicle
 from .driver import Driver
 from .batch import DeliveryBatch
+from .mandi import MandiPrice
 
 __all__ = [
     "User",
@@ -15,4 +16,5 @@ __all__ = [
     "Vehicle",
     "Driver",
     "DeliveryBatch",
+    "MandiPrice",
 ]
