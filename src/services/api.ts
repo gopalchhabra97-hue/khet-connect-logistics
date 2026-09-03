@@ -400,6 +400,54 @@ export const authApi = {
   },
 };
 
+/* ---------------- Forecast API ---------------- */
+
+export interface ApiForecastPoint {
+  period: string;
+  historical: number | null;
+  predicted: number | null;
+}
+
+export interface ApiForecastResponse {
+  product_id: string | null;
+  product_name: string;
+  series: ApiForecastPoint[];
+  current_demand: number;
+  predicted_demand: number;
+  available_supply: number;
+  safety_buffer_pct: number;
+  recommended_supply: number;
+  recommendation_text: string;
+  trend: "Increasing" | "Decreasing" | "Stable";
+  error_metric: number;
+  status: "live" | "demo";
+  reason: string;
+  model: string;
+  generated_at: string;
+}
+
+export const forecastApi = {
+  async list(params?: {
+    productId?: string;
+    cropName?: string;
+    safetyBufferPct?: number;
+    forecastDays?: number;
+  }): Promise<ApiForecastResponse[]> {
+    const query = new URLSearchParams();
+    if (params?.productId) query.set("product_id", params.productId);
+    if (params?.cropName) query.set("crop_name", params.cropName);
+    if (params?.safetyBufferPct !== undefined) query.set("safety_buffer_pct", String(params.safetyBufferPct));
+    if (params?.forecastDays !== undefined) query.set("forecast_days", String(params.forecastDays));
+
+    const qs = query.toString() ? `?${query.toString()}` : "";
+    return request<ApiForecastResponse[]>(`/forecast${qs}`);
+  },
+
+  async get(productId: string): Promise<ApiForecastResponse> {
+    return request<ApiForecastResponse>(`/forecast/${encodeURIComponent(productId)}`);
+  },
+};
+
 /* ---------------- Health Check ---------------- */
 
 export async function checkBackendHealth(): Promise<boolean> {

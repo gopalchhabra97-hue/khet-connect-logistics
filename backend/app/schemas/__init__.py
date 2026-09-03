@@ -223,3 +223,28 @@ class DeliveryBatchResponse(DeliveryBatchBase):
 
     class Config:
         from_attributes = True
+
+
+# Forecast Schemas
+class ForecastPointSchema(BaseModel):
+    period: str
+    historical: Optional[float] = None
+    predicted: Optional[float] = None
+
+
+class ForecastResponse(BaseModel):
+    product_id: Optional[str] = None
+    product_name: str
+    series: List[ForecastPointSchema]
+    current_demand: float
+    predicted_demand: float
+    available_supply: float
+    safety_buffer_pct: float
+    recommended_supply: float
+    recommendation_text: str
+    trend: str  # "Increasing" | "Decreasing" | "Stable"
+    error_metric: float  # MAPE percentage
+    status: str  # "live" | "demo"
+    reason: str
+    model: str
+    generated_at: datetime

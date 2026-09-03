@@ -10,6 +10,7 @@ from app.routers.orders import router as orders_router
 from app.routers.auth import router as auth_router
 from app.routers.vehicles import router as vehicles_router
 from app.routers.drivers import router as drivers_router
+from app.routers.forecast import router as forecast_router
 
 # Create database tables if they don't exist
 Base.metadata.create_all(bind=engine)
@@ -39,6 +40,7 @@ app.include_router(products_router, prefix="/api/v1")
 app.include_router(orders_router, prefix="/api/v1")
 app.include_router(vehicles_router, prefix="/api/v1")
 app.include_router(drivers_router, prefix="/api/v1")
+app.include_router(forecast_router, prefix="/api/v1")
 
 
 @app.get("/")
