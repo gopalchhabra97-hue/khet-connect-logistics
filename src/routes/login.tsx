@@ -56,18 +56,29 @@ function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const signIn = (targetEmail: string, targetRole: Role) => {
+  const signIn = async (targetEmail: string, targetPassword?: string, targetRole?: Role) => {
     if (!targetEmail.trim()) {
       setError("Enter an email or mobile number to continue.");
       return;
     }
     setError(null);
     setBusy(true);
-    login(targetEmail, targetRole);
-    toast.success("Signed in to demo mode", {
-      description: `Continuing as ${DEMO_ACCOUNTS.find((a) => a.role === targetRole)?.label}.`,
-    });
-    void navigate({ to: HOME[targetRole] });
+
+    try {
+      const user = await login(targetEmail, targetPassword || password, targetRole || role);
+      const userRole = (user.role as Role) || targetRole || role;
+      toast.success("Signed in successfully", {
+        description: `Welcome back, ${user.name || user.email}! Continuing to ${userRole} dashboard.`,
+      });
+      void navigate({ to: HOME[userRole] || "/farmer" });
+    } catch (err: any) {
+      const msg = err.message || "Failed to sign in. Please check your credentials.";
+      const cleanMsg = msg.includes("]: ") ? msg.split("]: ")[1] : msg;
+      setError(cleanMsg);
+      toast.error("Authentication failed", { description: cleanMsg });
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -109,7 +120,7 @@ function LoginPage() {
             className="mt-6 space-y-4"
             onSubmit={(e) => {
               e.preventDefault();
-              signIn(email, role);
+              void signIn(email, password, role);
             }}
           >
             <div className="space-y-1.5">
@@ -189,7 +200,8 @@ function LoginPage() {
               type="button"
               variant="outline"
               className="w-full"
-              onClick={() => signIn(`${role}@demo.com`, role)}
+              disabled={busy}
+              onClick={() => void signIn(`${role}@demo.com`, "demo123", role)}
             >
               Continue with demo account
             </Button>
@@ -197,7 +209,7 @@ function LoginPage() {
 
           <div className="mt-6 rounded-xl border border-border bg-surface p-4">
             <p className="text-sm font-semibold text-foreground">Demo credentials</p>
-            <p className="text-xs text-muted-foreground">Password: demo123 (any password is accepted)</p>
+            <p className="text-xs text-muted-foreground">Default demo password: demo123</p>
             <ul className="mt-3 grid gap-2 sm:grid-cols-2">
               {DEMO_ACCOUNTS.map((a) => (
                 <li key={a.email}>
@@ -205,6 +217,7 @@ function LoginPage() {
                     type="button"
                     onClick={() => {
                       setEmail(a.email);
+                      setPassword("demo123");
                       setRole(a.role);
                     }}
                     className="w-full rounded-lg border border-border bg-card px-3 py-2 text-left text-xs hover:border-primary/50"

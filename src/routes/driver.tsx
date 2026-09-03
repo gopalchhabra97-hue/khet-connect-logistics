@@ -12,14 +12,22 @@ export const Route = createFileRoute("/driver")({
 });
 
 function DriverLayout() {
-  const { user } = useDemo();
+  const { user, isAuthLoading } = useDemo();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user || user.role !== "driver") {
+    if (!isAuthLoading && (!user || user.role !== "driver")) {
       void navigate({ to: "/login" });
     }
-  }, [user, navigate]);
+  }, [user, isAuthLoading, navigate]);
+
+  if (isAuthLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-sm text-muted-foreground animate-pulse">Verifying credentials…</p>
+      </div>
+    );
+  }
 
   if (!user || user.role !== "driver") {
     return null;

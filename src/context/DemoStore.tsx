@@ -30,7 +30,7 @@ import {
   User,
   Vehicle,
 } from "@/types";
-import { productsApi, ordersApi } from "@/services/api";
+import { productsApi, ordersApi, authApi, tokenStorage } from "@/services/api";
 
 const STORAGE_KEY = "khetsetu-demo-state-v1";
 
@@ -70,8 +70,9 @@ export function routeDistance(pickup: string, stops: string[]): number {
 
 interface DemoContextValue extends DemoState {
   isBackendConnected: boolean;
+  isAuthLoading: boolean;
   syncFromBackend: () => Promise<void>;
-  login: (email: string, role: Role) => User;
+  login: (email: string, passwordOrRole?: string | Role, fallbackRole?: Role) => Promise<User>;
   logout: () => void;
   addProduct: (p: Omit<Product, "id" | "sellerId" | "seller" | "verified">) => Promise<Product | void> | void;
   updateProduct: (id: string, patch: Partial<Product>) => Promise<Product | void> | void;
@@ -96,6 +97,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<DemoState>(initialState);
   const [hydrated, setHydrated] = useState(false);
   const [isBackendConnected, setIsBackendConnected] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   const syncFromBackend = useCallback(async () => {
     try {
@@ -129,7 +131,27 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     }
     setHydrated(true);
 
-    // Load primary data from FastAPI backend
+    // Verify stored JWT and restore user if token exists
+    const initAuth = async () => {
+      const token = tokenStorage.get();
+      if (token) {
+        try {
+          const user = await authApi.getCurrentUser();
+          setState((s) => ({ ...s, user }));
+          setIsBackendConnected(true);
+        } catch (err) {
+          console.warn("Stored JWT token invalid or expired. Clearing auth token.", err);
+          tokenStorage.clear();
+          setState((s) => ({ ...s, user: null }));
+        }
+      } else {
+        // If no JWT stored, start unauthenticated
+        setState((s) => ({ ...s, user: null }));
+      }
+      setIsAuthLoading(false);
+    };
+
+    void initAuth();
     void syncFromBackend();
   }, [syncFromBackend]);
 
@@ -163,31 +185,59 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const login = useCallback((email: string, role: Role): User => {
-    const known = DEMO_USERS[email.trim().toLowerCase()];
-    const user: User =
-      known && known.role === role
-        ? known
-        : {
-            id: `U-${role.toUpperCase()}-DEMO`,
-            name:
-              role === "farmer"
-                ? "Rajesh Kumar"
-                : role === "buyer"
-                  ? "Anita Sharma"
-                  : role === "driver"
-                    ? "Amit Kumar"
-                    : "Priya Nair",
-            email: email.trim() || `${role}@demo.com`,
-            role,
-            org: role === "farmer" ? "Green Valley FPO" : undefined,
-            location: role === "buyer" ? "Chandigarh" : "Patiala",
-          };
-    setState((s) => ({ ...s, user }));
-    return user;
-  }, []);
+  const login = useCallback(
+    async (email: string, passwordOrRole?: string | Role, fallbackRole?: Role): Promise<User> => {
+      const isRole = passwordOrRole && ["farmer", "buyer", "driver", "admin"].includes(passwordOrRole);
+      const password = isRole ? "demo123" : (passwordOrRole as string) || "demo123";
+      const roleHint = isRole ? (passwordOrRole as Role) : fallbackRole;
 
-  const logout = useCallback(() => setState((s) => ({ ...s, user: null })), []);
+      try {
+        const { user } = await authApi.login({
+          email: email.trim(),
+          password,
+        });
+        setState((s) => ({ ...s, user }));
+        setIsBackendConnected(true);
+        return user;
+      } catch (err) {
+        // If the server explicitly rejected the credentials, raise error to the caller
+        if (err instanceof Error && (err.message.includes("401") || err.message.includes("400"))) {
+          throw err;
+        }
+
+        // Otherwise if backend is offline, fall back to demo accounts
+        console.warn("Backend auth unavailable, falling back to demo account:", err);
+        const role = roleHint || "farmer";
+        const known = DEMO_USERS[email.trim().toLowerCase()];
+        const user: User =
+          known && known.role === role
+            ? known
+            : {
+                id: `U-${role.toUpperCase()}-DEMO`,
+                name:
+                  role === "farmer"
+                    ? "Rajesh Kumar"
+                    : role === "buyer"
+                      ? "Anita Sharma"
+                      : role === "driver"
+                        ? "Amit Kumar"
+                        : "Priya Nair",
+                email: email.trim() || `${role}@demo.com`,
+                role,
+                org: role === "farmer" ? "Green Valley FPO" : undefined,
+                location: role === "buyer" ? "Chandigarh" : "Patiala",
+              };
+        setState((s) => ({ ...s, user }));
+        return user;
+      }
+    },
+    [],
+  );
+
+  const logout = useCallback(() => {
+    authApi.logout();
+    setState((s) => ({ ...s, user: null }));
+  }, []);
 
   const addProduct: DemoContextValue["addProduct"] = useCallback(
     async (p) => {
@@ -502,6 +552,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     () => ({
       ...state,
       isBackendConnected,
+      isAuthLoading,
       syncFromBackend,
       login,
       logout,
@@ -520,6 +571,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     [
       state,
       isBackendConnected,
+      isAuthLoading,
       syncFromBackend,
       login,
       logout,

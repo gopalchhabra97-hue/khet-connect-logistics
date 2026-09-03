@@ -5,11 +5,28 @@
  * and Frontend TypeScript models (camelCase).
  */
 
-import type { Order, OrderStatus, Product } from "@/types";
+import type { Order, OrderStatus, Product, Role, User } from "@/types";
 
 const API_BASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
   "http://127.0.0.1:8000/api/v1";
+
+const TOKEN_KEY = "khetsetu_auth_token";
+
+export const tokenStorage = {
+  get: (): string | null => {
+    if (typeof window === "undefined") return null;
+    return window.localStorage.getItem(TOKEN_KEY);
+  },
+  set: (token: string): void => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(TOKEN_KEY, token);
+  },
+  clear: (): void => {
+    if (typeof window === "undefined") return;
+    window.localStorage.removeItem(TOKEN_KEY);
+  },
+};
 
 /* ---------------- API DTO Interfaces (Backend Format) ---------------- */
 
@@ -110,11 +127,17 @@ export function mapApiOrderToFrontend(o: ApiOrder): Order {
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${path}`;
-  const headers = {
+  const token = tokenStorage.get();
+
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
     Accept: "application/json",
-    ...options.headers,
+    ...(options.headers as Record<string, string>),
   };
+
+  if (token && !headers["Authorization"]) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
 
   const response = await fetch(url, {
     ...options,
@@ -293,6 +316,87 @@ export const ordersApi = {
       body: JSON.stringify({ status }),
     });
     return mapApiOrderToFrontend(updated);
+  },
+};
+
+/* ---------------- Authentication API ---------------- */
+
+export interface RegisterPayload {
+  name: string;
+  email: string;
+  password: string;
+  role: "farmer" | "buyer" | "driver";
+  org?: string;
+  location?: string;
+}
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  token_type: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    org?: string;
+    location?: string;
+    created_at: string;
+    updated_at: string;
+  };
+}
+
+export const authApi = {
+  async register(payload: RegisterPayload): Promise<User> {
+    const res = await request<TokenResponse["user"]>("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    return {
+      id: res.id,
+      name: res.name,
+      email: res.email,
+      role: res.role as Role,
+      org: res.org,
+      location: res.location,
+    };
+  },
+
+  async login(payload: LoginPayload): Promise<{ token: string; user: User }> {
+    const res = await request<TokenResponse>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    tokenStorage.set(res.access_token);
+    const user: User = {
+      id: res.user.id,
+      name: res.user.name,
+      email: res.user.email,
+      role: res.user.role as Role,
+      org: res.user.org,
+      location: res.user.location,
+    };
+    return { token: res.access_token, user };
+  },
+
+  async getCurrentUser(): Promise<User> {
+    const res = await request<TokenResponse["user"]>("/auth/me");
+    return {
+      id: res.id,
+      name: res.name,
+      email: res.email,
+      role: res.role as Role,
+      org: res.org,
+      location: res.location,
+    };
+  },
+
+  logout(): void {
+    tokenStorage.clear();
   },
 };
 

@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LOCATIONS } from "@/data/mockData";
+import { authApi } from "@/services/api";
 
 export const Route = createFileRoute("/register")({
   head: () => ({
@@ -80,11 +81,16 @@ function Field({
   );
 }
 
-function useRegisterForm(schema: z.ZodTypeAny, roleLabel: string) {
+function useRegisterForm(
+  schema: z.ZodTypeAny,
+  role: "farmer" | "buyer" | "driver",
+  roleLabel: string,
+) {
   const [errors, setErrors] = useState<Errors>({});
   const [done, setDone] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const submit = (e: React.FormEvent<HTMLFormElement>) => {
+  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.currentTarget).entries());
     const result = schema.safeParse(data);
@@ -98,23 +104,60 @@ function useRegisterForm(schema: z.ZodTypeAny, roleLabel: string) {
       toast.error("Please fix the highlighted fields");
       return;
     }
+
     setErrors({});
-    setDone(true);
-    toast.success(`${roleLabel} registration submitted`, {
-      description: "Demo account created. You can now sign in with any demo credentials.",
-    });
+    setIsLoading(true);
+
+    try {
+      let org: string | undefined = undefined;
+      let location: string | undefined = undefined;
+
+      if (role === "farmer") {
+        org = (data.entity as string) === "fpo" ? (data.name as string) : undefined;
+        location = `${data.village}, ${data.district}, ${data.state}`;
+      } else if (role === "buyer") {
+        org = `${data.buyerType} Buyer`;
+        location = data.location as string;
+      } else if (role === "driver") {
+        org = `Vehicle: ${data.vehicle}`;
+        location = "Punjab Region";
+      }
+
+      await authApi.register({
+        name: data.name as string,
+        email: data.email as string,
+        password: data.password as string,
+        role,
+        org,
+        location,
+      });
+
+      setDone(true);
+      toast.success(`${roleLabel} registration successful!`, {
+        description: "Your account is saved in PostgreSQL. You can now sign in.",
+      });
+    } catch (err: any) {
+      const msg = err.message || "Registration failed. Please try again.";
+      const cleanMsg = msg.includes("]: ") ? msg.split("]: ")[1] : msg;
+      if (cleanMsg.toLowerCase().includes("email already registered")) {
+        setErrors({ email: "This email is already registered. Please login." });
+      }
+      toast.error("Registration failed", { description: cleanMsg });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  return { errors, done, submit, reset: () => setDone(false) };
+  return { errors, done, isLoading, submit, reset: () => setDone(false) };
 }
 
 function SuccessPanel({ roleLabel, onAgain }: { roleLabel: string; onAgain: () => void }) {
   return (
     <div className="rounded-xl border border-success/40 bg-success/8 p-6 text-center">
       <CheckCircle2 className="mx-auto mb-3 size-7 text-success" aria-hidden="true" />
-      <p className="font-semibold text-foreground">{roleLabel} account created (demo)</p>
+      <p className="font-semibold text-foreground">{roleLabel} account created successfully</p>
       <p className="mt-1 text-sm text-muted-foreground">
-        No data is stored on a server. Sign in with a demo account to explore the prototype.
+        Your account is saved. You can now sign in with your email and password.
       </p>
       <div className="mt-5 flex flex-wrap justify-center gap-2">
         <Button asChild>
@@ -129,7 +172,7 @@ function SuccessPanel({ roleLabel, onAgain }: { roleLabel: string; onAgain: () =
 }
 
 function FarmerForm() {
-  const { errors, done, submit, reset } = useRegisterForm(farmerSchema, "Farmer / FPO");
+  const { errors, done, isLoading, submit, reset } = useRegisterForm(farmerSchema, "farmer", "Farmer / FPO");
   if (done) return <SuccessPanel roleLabel="Farmer / FPO" onAgain={reset} />;
   return (
     <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
@@ -165,15 +208,15 @@ function FarmerForm() {
           </SelectContent>
         </Select>
       </Field>
-      <Button type="submit" className="sm:col-span-2">
-        Create farmer / FPO account
+      <Button type="submit" className="sm:col-span-2" disabled={isLoading}>
+        {isLoading ? "Creating account…" : "Create farmer / FPO account"}
       </Button>
     </form>
   );
 }
 
 function BuyerForm() {
-  const { errors, done, submit, reset } = useRegisterForm(buyerSchema, "Buyer");
+  const { errors, done, isLoading, submit, reset } = useRegisterForm(buyerSchema, "buyer", "Buyer");
   if (done) return <SuccessPanel roleLabel="Buyer" onAgain={reset} />;
   return (
     <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
@@ -216,15 +259,15 @@ function BuyerForm() {
           </SelectContent>
         </Select>
       </Field>
-      <Button type="submit" className="sm:col-span-2">
-        Create buyer account
+      <Button type="submit" className="sm:col-span-2" disabled={isLoading}>
+        {isLoading ? "Creating account…" : "Create buyer account"}
       </Button>
     </form>
   );
 }
 
 function DriverForm() {
-  const { errors, done, submit, reset } = useRegisterForm(driverSchema, "Driver");
+  const { errors, done, isLoading, submit, reset } = useRegisterForm(driverSchema, "driver", "Driver");
   if (done) return <SuccessPanel roleLabel="Driver" onAgain={reset} />;
   return (
     <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
@@ -246,8 +289,8 @@ function DriverForm() {
       <Field id="d-vehicle" label="Vehicle information" error={errors["vehicle"]}>
         <Input id="d-vehicle" name="vehicle" placeholder="HR-XX-1234 · 1,000 kg mini truck" />
       </Field>
-      <Button type="submit" className="sm:col-span-2">
-        Create driver account
+      <Button type="submit" className="sm:col-span-2" disabled={isLoading}>
+        {isLoading ? "Creating account…" : "Create driver account"}
       </Button>
     </form>
   );

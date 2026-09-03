@@ -12,14 +12,22 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminLayout() {
-  const { user } = useDemo();
+  const { user, isAuthLoading } = useDemo();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user || user.role !== "admin") {
+    if (!isAuthLoading && (!user || user.role !== "admin")) {
       void navigate({ to: "/login" });
     }
-  }, [user, navigate]);
+  }, [user, isAuthLoading, navigate]);
+
+  if (isAuthLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-sm text-muted-foreground animate-pulse">Verifying credentials…</p>
+      </div>
+    );
+  }
 
   if (!user || user.role !== "admin") {
     return null;
