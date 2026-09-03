@@ -448,6 +448,129 @@ export const forecastApi = {
   },
 };
 
+/* ---------------- Payments & Settlement API ---------------- */
+
+export interface ApiPayment {
+  id: string;
+  order_id: string;
+  buyer_id: string;
+  payment_type: string;
+  amount: number;
+  status: string;
+  payment_method: string;
+  transaction_reference: string;
+  created_at: string;
+  paid_at?: string | null;
+}
+
+export interface ApiAdvancePaymentResponse {
+  order_id: string;
+  product_subtotal: number;
+  advance_percentage: number;
+  advance_amount: number;
+  advance_payment_status: string;
+  payment_status: string;
+  transaction_reference: string;
+  payment: ApiPayment;
+  message: string;
+}
+
+export interface ApiFinalPaymentResponse {
+  order_id: string;
+  product_subtotal: number;
+  advance_already_paid: number;
+  remaining_product_amount: number;
+  transportation_charge: number;
+  final_payment_amount: number;
+  total_buyer_payment: number;
+  payment_status: string;
+  transaction_reference: string;
+  payment: ApiPayment;
+  message: string;
+}
+
+export interface ApiTransportationCharge {
+  order_id: string;
+  pickup_location: string;
+  delivery_location: string;
+  distance_km: number;
+  rate_per_km: number;
+  transportation_charge: number;
+  explanation: string;
+}
+
+export interface ApiDeliveryOTPGenerate {
+  order_id: string;
+  message: string;
+  demo_otp: string;
+  expires_at: string;
+}
+
+export interface ApiDeliveryOTPVerify {
+  order_id: string;
+  status: string;
+  message: string;
+  delivery_confirmed_at: string;
+  driver_payout_status: string;
+}
+
+export interface ApiDriverPayout {
+  id: string;
+  order_id: string;
+  driver_id: string;
+  amount: number;
+  status: string;
+  transaction_reference?: string | null;
+  created_at: string;
+  paid_at?: string | null;
+}
+
+export const paymentsApi = {
+  async payAdvance(orderId: string): Promise<ApiAdvancePaymentResponse> {
+    return request<ApiAdvancePaymentResponse>(`/orders/${encodeURIComponent(orderId)}/payments/advance`, {
+      method: "POST",
+    });
+  },
+
+  async payFinal(orderId: string): Promise<ApiFinalPaymentResponse> {
+    return request<ApiFinalPaymentResponse>(`/orders/${encodeURIComponent(orderId)}/payments/final`, {
+      method: "POST",
+    });
+  },
+
+  async getTransportationCharge(orderId: string, ratePerKm?: number): Promise<ApiTransportationCharge> {
+    const qs = ratePerKm ? `?rate_per_km=${ratePerKm}` : "";
+    return request<ApiTransportationCharge>(`/orders/${encodeURIComponent(orderId)}/transportation-charge${qs}`);
+  },
+
+  async generateOtp(orderId: string): Promise<ApiDeliveryOTPGenerate> {
+    return request<ApiDeliveryOTPGenerate>(`/orders/${encodeURIComponent(orderId)}/delivery-otp/generate`, {
+      method: "POST",
+    });
+  },
+
+  async verifyOtp(orderId: string, otp: string): Promise<ApiDeliveryOTPVerify> {
+    return request<ApiDeliveryOTPVerify>(`/orders/${encodeURIComponent(orderId)}/delivery-otp/verify`, {
+      method: "POST",
+      body: JSON.stringify({ otp }),
+    });
+  },
+
+  getInvoiceUrl(orderId: string): string {
+    return `${API_BASE_URL}/orders/${encodeURIComponent(orderId)}/invoice`;
+  },
+
+  async getDriverPayouts(driverId: string): Promise<ApiDriverPayout[]> {
+    return request<ApiDriverPayout[]>(`/drivers/${encodeURIComponent(driverId)}/payouts`);
+  },
+
+  async payDriverPayout(driverId: string, payoutId: string): Promise<ApiDriverPayout> {
+    return request<ApiDriverPayout>(`/drivers/${encodeURIComponent(driverId)}/payouts/${encodeURIComponent(payoutId)}/pay`, {
+      method: "PATCH",
+    });
+  },
+};
+
 /* ---------------- Health Check ---------------- */
 
 export async function checkBackendHealth(): Promise<boolean> {

@@ -130,8 +130,104 @@ class OrderResponse(BaseModel):
     expected_delivery: Optional[str] = None
     status: str
     batch_id: Optional[str] = None
+    product_subtotal: Optional[float] = None
+    advance_percentage: Optional[float] = 30.0
+    advance_amount: Optional[float] = None
+    advance_payment_status: Optional[str] = "unpaid"
+    remaining_product_amount: Optional[float] = None
+    remaining_payment_status: Optional[str] = "unpaid"
+    transportation_charge: Optional[float] = None
+    total_payable_amount: Optional[float] = None
+    payment_status: Optional[str] = "pending"
+    delivery_confirmed_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# Settlement & Payment Schemas
+class PaymentResponse(BaseModel):
+    id: str
+    order_id: str
+    buyer_id: str
+    payment_type: str
+    amount: float
+    status: str
+    payment_method: str
+    transaction_reference: str
+    created_at: datetime
+    paid_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class AdvancePaymentResponse(BaseModel):
+    order_id: str
+    product_subtotal: float
+    advance_percentage: float
+    advance_amount: float
+    advance_payment_status: str
+    payment_status: str
+    transaction_reference: str
+    payment: PaymentResponse
+    message: str
+
+
+class FinalPaymentResponse(BaseModel):
+    order_id: str
+    product_subtotal: float
+    advance_already_paid: float
+    remaining_product_amount: float
+    transportation_charge: float
+    final_payment_amount: float
+    total_buyer_payment: float
+    payment_status: str
+    transaction_reference: str
+    payment: PaymentResponse
+    message: str
+
+
+class TransportationChargeResponse(BaseModel):
+    order_id: str
+    pickup_location: str
+    delivery_location: str
+    distance_km: float
+    rate_per_km: float
+    transportation_charge: float
+    explanation: str
+
+
+class DeliveryOTPGenerateResponse(BaseModel):
+    order_id: str
+    message: str
+    demo_otp: str  # Safe development/testing mechanism
+    expires_at: datetime
+
+
+class DeliveryOTPVerifyRequest(BaseModel):
+    otp: str
+
+
+class DeliveryOTPVerifyResponse(BaseModel):
+    order_id: str
+    status: str
+    message: str
+    delivery_confirmed_at: datetime
+    driver_payout_status: str
+
+
+class DriverPayoutResponse(BaseModel):
+    id: str
+    order_id: str
+    driver_id: str
+    amount: float
+    status: str
+    transaction_reference: Optional[str] = None
+    created_at: datetime
+    paid_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
