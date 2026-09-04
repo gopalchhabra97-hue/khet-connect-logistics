@@ -14,6 +14,7 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 import psycopg2
+from pathlib import Path
 from dotenv import load_dotenv
 
 if sys.platform == "win32":
@@ -241,14 +242,14 @@ def main():
         print(f"[PASS] 17. Historical orders verified intact: #1001 retains price ₹{sample_order['price_per_unit']}/unit.")
 
         # 18 & 19. Demo fallback remains available and is NEVER labeled live
-        code, ref_demo = api_call("GET", "/mandi-prices/reference/Guava?location=Patiala")
+        code, ref_demo = api_call("GET", "/mandi-prices/reference/Kinnow?location=Patiala")
         assert code == 200
         assert ref_demo["status"] == "demo"
         assert ref_demo["status"] != "live"
         assert "DEMO FALLBACK" in ref_demo["explanation"]
-        assert ref_demo["price_per_kg"] == 45.0
-        assert ref_demo["max_allowed_price"] == 90.0
-        print(f"[PASS] 18 & 19. Demo fallback verified for Guava: status='demo' (never labeled live), ref=₹45.00/kg, max=₹90.00/kg.")
+        assert ref_demo["price_per_kg"] == 35.0
+        assert ref_demo["max_allowed_price"] == 70.0
+        print(f"[PASS] 18 & 19. Demo fallback verified for Kinnow: status='demo' (never labeled live), ref=₹35.00/kg, max=₹70.00/kg.")
 
         # 20. Security: API key never appears in responses, logs, or git
         resp_dump = json.dumps([ref_live, ref_stale, ref_demo, status_data])
@@ -258,7 +259,11 @@ def main():
 
     finally:
         print("\n--- Cleaning up temporary test records ---")
-        load_dotenv("backend/.env")
+        env_file = Path(__file__).resolve().parent / ".env"
+        if env_file.exists():
+            load_dotenv(env_file)
+        else:
+            load_dotenv()
         conn = psycopg2.connect(os.getenv("DATABASE_URL"))
         cur = conn.cursor()
 

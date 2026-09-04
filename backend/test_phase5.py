@@ -6,8 +6,15 @@ import sys
 import urllib.error
 import urllib.parse
 import urllib.request
+from pathlib import Path
 import psycopg2
 from dotenv import load_dotenv
+
+env_path = Path(__file__).resolve().parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
+else:
+    load_dotenv()
 
 if sys.platform == "win32":
     try:
@@ -126,9 +133,9 @@ def main():
         print(f"[PASS] 10. Custom parameters handled correctly (safety_buffer=20% -> rec={expected_rec_20} kg)")
 
         # 11. Live AI model execution test with sufficient historical order data
-        print("\n--- Testing Live AI Model Generation (Simulating sufficient order points) ---")
-        load_dotenv()
-        conn = psycopg2.connect(os.getenv("DATABASE_URL", "postgresql://postgres:REDACTED_PASSWORD@localhost:5432/khetsetu"))
+        db_url = os.getenv("DATABASE_URL")
+        assert db_url, "DATABASE_URL environment variable is not configured"
+        conn = psycopg2.connect(db_url)
         cur = conn.cursor()
 
         # Insert a temporary test product
@@ -170,8 +177,9 @@ def main():
     finally:
         # Cleanup temporary records
         print("\n--- Cleaning up temporary AI test records ---")
-        load_dotenv()
-        conn = psycopg2.connect(os.getenv("DATABASE_URL", "postgresql://postgres:REDACTED_PASSWORD@localhost:5432/khetsetu"))
+        db_url = os.getenv("DATABASE_URL")
+        assert db_url, "DATABASE_URL environment variable is not configured"
+        conn = psycopg2.connect(db_url)
         cur = conn.cursor()
 
         for oid in created_order_ids:

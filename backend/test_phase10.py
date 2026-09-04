@@ -27,19 +27,17 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import psycopg2
+from pathlib import Path
 from dotenv import load_dotenv
 
-if sys.platform == "win32":
-    try:
-        sys.stdout.reconfigure(encoding="utf-8")
-        sys.stderr.reconfigure(encoding="utf-8")
-    except Exception:
-        pass
+env_path = Path(__file__).resolve().parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
+else:
+    load_dotenv()
 
 BASE_URL = "http://127.0.0.1:8000/api/v1"
 HEALTH_URL = "http://127.0.0.1:8000/api/health"
-
-load_dotenv()
 
 
 def api_json_call(method, path, body=None, token=None):
@@ -129,7 +127,8 @@ def run_phase10_tests():
     print("=" * 70)
 
     # 1. Connect to PostgreSQL and verify connection & seed data
-    db_url = os.getenv("DATABASE_URL", "postgresql://postgres:REDACTED_PASSWORD@localhost:5432/khetsetu")
+    db_url = os.getenv("DATABASE_URL")
+    assert db_url, "DATABASE_URL environment variable is not configured"
     try:
         db_conn = psycopg2.connect(db_url)
         db_conn.autocommit = True

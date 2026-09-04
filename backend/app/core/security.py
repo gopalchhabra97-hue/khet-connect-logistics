@@ -12,9 +12,18 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db_session
 from app.models.user import User
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Configuration from environment
-JWT_SECRET = os.getenv("JWT_SECRET", os.getenv("SECRET_KEY", "insecure-dev-only-secret-key-change-in-production"))
+JWT_SECRET = os.getenv("JWT_SECRET") or os.getenv("SECRET_KEY")
+if not JWT_SECRET:
+    if os.getenv("ENV", "development").lower() == "production":
+        raise RuntimeError("CRITICAL: JWT_SECRET or SECRET_KEY must be configured in production environment!")
+    JWT_SECRET = "insecure-dev-only-secret-key-change-in-production"
+    logger.warning("JWT_SECRET not configured in environment. Using development fallback.")
+
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))  # Default 24 hours
 

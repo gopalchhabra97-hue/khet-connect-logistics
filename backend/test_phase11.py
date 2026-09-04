@@ -40,8 +40,15 @@ import urllib.parse
 import urllib.request
 import cv2
 import numpy as np
+from pathlib import Path
 import psycopg2
 from dotenv import load_dotenv
+
+env_path = Path(__file__).resolve().parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
+else:
+    load_dotenv()
 
 if sys.platform == "win32":
     try:
@@ -125,7 +132,8 @@ def api_multipart_call(path, fields, files, token=None):
 
 
 def get_db_connection():
-    db_url = os.getenv("DATABASE_URL", "postgresql://postgres:REDACTED_PASSWORD@localhost:5432/khetsetu")
+    db_url = os.getenv("DATABASE_URL")
+    assert db_url, "DATABASE_URL environment variable is not configured"
     return psycopg2.connect(db_url)
 
 

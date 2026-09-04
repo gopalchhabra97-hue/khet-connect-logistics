@@ -257,16 +257,22 @@ SEED_QUALITY_RESULTS = [
 
 
 
-import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+env_file = Path(__file__).resolve().parent / ".env"
+if env_file.exists():
+    load_dotenv(env_file)
+else:
+    load_dotenv()
 
 
 def seed_database():
     """Seed the database with demo data."""
     try:
-        db_url = os.getenv("DATABASE_URL", "postgresql://postgres:REDACTED_PASSWORD@localhost:5432/khetsetu")
+        db_url = os.getenv("DATABASE_URL")
+        if not db_url:
+            raise RuntimeError("DATABASE_URL environment variable is not set. Please configure backend/.env")
         conn = psycopg2.connect(db_url)
         cur = conn.cursor()
 

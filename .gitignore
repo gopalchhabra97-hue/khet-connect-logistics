@@ -1,3 +1,9 @@
+# Environment & Secrets
+.env
+.env.*
+*.env
+backend/.env
+
 # Logs
 logs
 *.log
@@ -7,6 +13,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Node / Frontend Build
 node_modules
 dist
 dist-ssr
@@ -20,6 +27,22 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Python / Backend
+backend/venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads & Generated Media
+backend/static/uploads/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -30,8 +53,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-backend/.env
-backend/venv/
-__pycache__/
-*.pyc
-*.db
