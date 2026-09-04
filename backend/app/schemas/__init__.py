@@ -539,3 +539,36 @@ class MatchingSearchResponse(BaseModel):
     total_candidates_evaluated: int
     buyer_requirements: MatchingSearchRequest
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ============================================================================
+# Phase 10: Crop Quality Visual Grading Schemas
+# ============================================================================
+
+class CropQualityFactorScores(BaseModel):
+    freshness: float = Field(..., ge=0, le=20, description="Freshness / Turgidity (max 20)")
+    color_appearance: float = Field(..., ge=0, le=15, description="Color & Surface Appearance (max 15)")
+    physical_damage: float = Field(..., ge=0, le=15, description="Physical Damage / Blemishes (max 15)")
+    disease_spots: float = Field(..., ge=0, le=15, description="Disease / Visible Spots (max 15)")
+    pest_damage: float = Field(..., ge=0, le=10, description="Pest Damage / Borer Marks (max 10)")
+    size_uniformity: float = Field(..., ge=0, le=10, description="Size & Dimensional Uniformity (max 10)")
+    rot_decay: float = Field(..., ge=0, le=10, description="Rot / Decay (max 10)")
+    cleanliness: float = Field(..., ge=0, le=5, description="Cleanliness / Surface Debris (max 5)")
+
+
+class CropQualityResponse(BaseModel):
+    id: str
+    product_id: Optional[str] = None
+    image_url: Optional[str] = None
+    crop: str
+    total_score: float = Field(..., ge=0, le=100, description="Total visual quality score out of 100")
+    grade: str = Field(..., description="Grade: A+, A, B, C, or D")
+    factor_scores: CropQualityFactorScores
+    detected_issues: List[str]
+    recommendation: Optional[str] = None
+    analysis_mode: str = Field("demo", description="'ai' or 'demo'")
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+

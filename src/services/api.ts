@@ -7,6 +7,8 @@
 
 import type {
   BatchStatus,
+  CropQualityFactorScores,
+  CropQualityResult,
   DeliveryBatch,
   Driver,
   DriverStatus,
@@ -57,6 +59,31 @@ export interface ApiProduct {
   image?: string | null;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface ApiCropQualityFactorScores {
+  freshness: number;
+  color_appearance: number;
+  physical_damage: number;
+  disease_spots: number;
+  pest_damage: number;
+  size_uniformity: number;
+  rot_decay: number;
+  cleanliness: number;
+}
+
+export interface ApiCropQualityResponse {
+  id: string;
+  product_id?: string | null;
+  image_url?: string | null;
+  crop: string;
+  total_score: number;
+  grade: string;
+  factor_scores: ApiCropQualityFactorScores;
+  detected_issues: string[];
+  recommendation?: string | null;
+  analysis_mode: string;
+  created_at: string;
 }
 
 export interface ApiOrder {
@@ -222,17 +249,47 @@ export function mapApiOrderToFrontend(o: ApiOrder): Order {
   };
 }
 
+export function mapApiQualityToFrontend(q: ApiCropQualityResponse): CropQualityResult {
+  const f = q.factor_scores || ({} as ApiCropQualityFactorScores);
+  return {
+    id: q.id,
+    productId: q.product_id,
+    imageUrl: q.image_url,
+    crop: q.crop,
+    totalScore: q.total_score,
+    grade: q.grade,
+    factorScores: {
+      freshness: f.freshness ?? 0,
+      colorAppearance: f.color_appearance ?? 0,
+      physicalDamage: f.physical_damage ?? 0,
+      diseaseSpots: f.disease_spots ?? 0,
+      pestDamage: f.pest_damage ?? 0,
+      sizeUniformity: f.size_uniformity ?? 0,
+      rotDecay: f.rot_decay ?? 0,
+      cleanliness: f.cleanliness ?? 0,
+    },
+    detectedIssues: q.detected_issues || [],
+    recommendation: q.recommendation,
+    analysisMode: q.analysis_mode || "demo",
+    createdAt: q.created_at,
+  };
+}
+
 /* ---------------- Core Fetch Wrapper ---------------- */
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${path}`;
   const token = tokenStorage.get();
 
+  const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
     Accept: "application/json",
     ...(options.headers as Record<string, string>),
   };
+
+  if (!isFormData && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
 
   if (token && !headers["Authorization"]) {
     headers["Authorization"] = `Bearer ${token}`;
@@ -993,6 +1050,35 @@ export const deliveryBatchesApi = {
   },
 };
 
+/* ---------------- Crop Quality API ---------------- */
+
+export const qualityApi = {
+  async analyze(formData: FormData): Promise<CropQualityResult> {
+    const res = await request<ApiCropQualityResponse>("/quality/analyze", {
+      method: "POST",
+      body: formData,
+    });
+    return mapApiQualityToFrontend(res);
+  },
+
+  async getByProductId(productId: string): Promise<CropQualityResult | null> {
+    try {
+      const res = await request<ApiCropQualityResponse>(`/quality/${encodeURIComponent(productId)}`);
+      return mapApiQualityToFrontend(res);
+    } catch (err: any) {
+      if (err?.message && err.message.includes("404")) {
+        return null;
+      }
+      throw err;
+    }
+  },
+
+  async list(): Promise<CropQualityResult[]> {
+    const res = await request<ApiCropQualityResponse[]>("/quality");
+    return res.map(mapApiQualityToFrontend);
+  },
+};
+
 /* ---------------- Health Check ---------------- */
 
 
@@ -1005,3 +1091,4 @@ export async function checkBackendHealth(): Promise<boolean> {
     return false;
   }
 }
+

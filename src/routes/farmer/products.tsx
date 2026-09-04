@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useMatches } from "@tanstack/react-router";
-import { Plus, Trash2, Edit2, Eye, EyeOff } from "lucide-react";
+import { Plus, Trash2, Edit2, Eye, EyeOff, Camera } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useDemo } from "@/context/DemoStore";
 import { productsService } from "@/services";
+import { QualityGradingModal } from "@/components/common/QualityGradingModal";
+import type { Product } from "@/types";
 
 export const Route = createFileRoute("/farmer/products")({
   head: () => ({
@@ -27,7 +29,9 @@ export const Route = createFileRoute("/farmer/products")({
 function FarmerProducts() {
   const { user, products, deleteProduct, toggleAvailability } = useDemo();
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
+  const [selectedQualityProduct, setSelectedQualityProduct] = useState<Product | null>(null);
   const matches = useMatches();
+
 
   if (!user) return null;
 
@@ -128,7 +132,18 @@ function FarmerProducts() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedQualityProduct(product)}
+                    className="gap-1.5 border-primary/30 text-primary hover:bg-primary/5 hover:text-primary"
+                    title="Visual Crop Quality Assessment"
+                  >
+                    <Camera className="size-4" />
+                    <span>Quality Grade</span>
+                  </Button>
+
                   <Button
                     variant="outline"
                     size="sm"
@@ -215,6 +230,17 @@ function FarmerProducts() {
           </div>
         )}
       </div>
+
+      {/* Quality Grading Modal */}
+      {selectedQualityProduct && (
+        <QualityGradingModal
+          product={selectedQualityProduct}
+          isOpen={Boolean(selectedQualityProduct)}
+          onOpenChange={(open) => !open && setSelectedQualityProduct(null)}
+          canUpload={true}
+        />
+      )}
     </div>
   );
 }
+

@@ -15,14 +15,22 @@ from app.routers.payments import router as payments_router
 from app.routers.mandi import router as mandi_router
 from app.routers.matching import router as matching_router
 from app.routers.batches import router as batches_router
+from app.routers.quality import router as quality_router
 from app.services.mandi_price_service import sync_mandi_prices, get_sync_interval_hours
 from app.db.database import get_db_session
 import asyncio
+from pathlib import Path
+from fastapi.staticfiles import StaticFiles
 
 # Create database tables if they don't exist
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="KHETSETU API")
+
+# Ensure static uploads directory exists and mount it
+UPLOAD_DIR = Path(__file__).resolve().parent.parent / "static" / "uploads"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/static/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
 # CORS configuration for local development
 # Supports standard Vite dev server ports (8080, 5173, 3000)
@@ -52,6 +60,8 @@ app.include_router(forecast_router, prefix="/api/v1")
 app.include_router(payments_router, prefix="/api/v1")
 app.include_router(mandi_router, prefix="/api/v1")
 app.include_router(matching_router, prefix="/api/v1")
+app.include_router(quality_router, prefix="/api/v1")
+
 
 
 

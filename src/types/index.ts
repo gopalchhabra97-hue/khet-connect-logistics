@@ -122,3 +122,29 @@ export interface ForecastPoint {
   historical: number | null;
   predicted: number | null;
 }
+
+export interface CropQualityFactorScores {
+  freshness: number;
+  colorAppearance: number;
+  physicalDamage: number;
+  diseaseSpots: number;
+  pestDamage: number;
+  sizeUniformity: number;
+  rotDecay: number;
+  cleanliness: number;
+}
+
+export interface CropQualityResult {
+  id: string;
+  productId?: string | null;
+  imageUrl?: string | null;
+  crop: string;
+  totalScore: number;
+  grade: "A+" | "A" | "B" | "C" | "D" | string;
+  factorScores: CropQualityFactorScores;
+  detectedIssues: string[];
+  recommendation?: string | null;
+  analysisMode: "ai" | "demo" | string;
+  createdAt: string;
+}
+

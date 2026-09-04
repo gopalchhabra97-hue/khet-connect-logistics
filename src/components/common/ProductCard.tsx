@@ -1,11 +1,24 @@
-import { BadgeCheck, Clock, Flame, MapPin, ShieldCheck, Sprout, TrendingUp } from "lucide-react";
+import { BadgeCheck, Clock, Flame, MapPin, ShieldCheck, Sprout, TrendingUp, Award } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatINR, formatQty, marketplaceIntelligence } from "@/services";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
+import { QualityGradingModal } from "@/components/common/QualityGradingModal";
+
+const SEED_QUALITY_SUMMARY: Record<string, { grade: string; score: number }> = {
+  tomato: { grade: "A", score: 87 },
+  potato: { grade: "A+", score: 92 },
+  onion: { grade: "B", score: 76 },
+  wheat: { grade: "A", score: 84 },
+  rice: { grade: "A", score: 88 },
+  "green peas": { grade: "B", score: 72 },
+  guava: { grade: "A+", score: 94 },
+};
+
 
 const CROP_TINT: Record<string, string> = {
   Vegetables: "from-emerald-500/20 to-primary/15",
@@ -25,6 +38,13 @@ export function ProductCard({
 }) {
   const perishability = marketplaceIntelligence.perishability(product.name, product.category);
   const demandBadge = marketplaceIntelligence.demandBadge(product.name);
+  const [showQualityModal, setShowQualityModal] = useState(false);
+
+  const normalizedCrop = product.name.trim().toLowerCase();
+  const qualitySummary = SEED_QUALITY_SUMMARY[normalizedCrop] || {
+    grade: "A",
+    score: 85,
+  };
 
   return (
     <article className="surface-panel flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-shadow hover:shadow-md">
@@ -90,6 +110,26 @@ export function ProductCard({
           <span className="text-[10px] text-foreground/80 font-medium">({perishability.shelfLife})</span>
         </div>
 
+        {/* AI/Visual Crop Quality Assessment Row */}
+        <div className="mt-2 flex items-center justify-between rounded-md border border-emerald-500/25 bg-emerald-50/70 dark:bg-emerald-950/25 px-2.5 py-1.5 text-[11px]">
+          <span className="flex items-center gap-1.5 font-medium text-emerald-900 dark:text-emerald-300">
+            <Award className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span>
+              Visual Quality:{" "}
+              <strong className="font-bold">
+                Grade {qualitySummary.grade} ({qualitySummary.score}/100)
+              </strong>
+            </span>
+          </span>
+          <button
+            type="button"
+            onClick={() => setShowQualityModal(true)}
+            className="text-[10px] font-semibold text-primary underline hover:text-primary/80 cursor-pointer"
+          >
+            Inspection
+          </button>
+        </div>
+
         <div className="mt-3 flex items-end justify-between border-t border-border pt-3">
           <div>
             <p className="text-xs text-muted-foreground">Price</p>
@@ -116,6 +156,16 @@ export function ProductCard({
           )}
         </div>
       </div>
+
+      {showQualityModal && (
+        <QualityGradingModal
+          product={product}
+          isOpen={showQualityModal}
+          onOpenChange={setShowQualityModal}
+          canUpload={false}
+        />
+      )}
     </article>
   );
 }
+
