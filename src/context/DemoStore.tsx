@@ -30,7 +30,15 @@ import {
   User,
   Vehicle,
 } from "@/types";
-import { productsApi, ordersApi, authApi, tokenStorage } from "@/services/api";
+import {
+  productsApi,
+  ordersApi,
+  authApi,
+  tokenStorage,
+  vehiclesApi,
+  driversApi,
+  deliveryBatchesApi,
+} from "@/services/api";
 
 const STORAGE_KEY = "khetsetu-demo-state-v1";
 
@@ -101,14 +109,20 @@ export function DemoProvider({ children }: { children: ReactNode }) {
 
   const syncFromBackend = useCallback(async () => {
     try {
-      const [remoteProducts, remoteOrders] = await Promise.all([
+      const [remoteProducts, remoteOrders, remoteVehicles, remoteDrivers, remoteBatches] = await Promise.all([
         productsApi.list(),
         ordersApi.list(),
+        vehiclesApi.list().catch(() => []),
+        driversApi.list().catch(() => []),
+        deliveryBatchesApi.list().catch(() => []),
       ]);
       setState((s) => ({
         ...s,
         products: remoteProducts,
         orders: remoteOrders,
+        vehicles: remoteVehicles.length > 0 ? remoteVehicles : s.vehicles,
+        drivers: remoteDrivers.length > 0 ? remoteDrivers : s.drivers,
+        batches: remoteBatches.length > 0 ? remoteBatches : s.batches,
       }));
       setIsBackendConnected(true);
     } catch (err) {
@@ -116,6 +130,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       setIsBackendConnected(false);
     }
   }, []);
+
 
   useEffect(() => {
     let rawState: DemoState | null = null;

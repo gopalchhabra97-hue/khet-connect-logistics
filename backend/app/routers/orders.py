@@ -17,9 +17,16 @@ ALLOWED_ORDER_STATUSES = {
     "Accepted",
     "Rejected",
     "Preparing",
+    "Ready for Delivery",
+    "Driver Assigned",
+    "Pickup",
+    "Picked Up",
     "In Transit",
+    "Out for Delivery",
     "Delivered",
+    "Cancelled",
 }
+
 
 
 @router.get("", response_model=List[OrderResponse])

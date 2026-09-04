@@ -5,7 +5,18 @@
  * and Frontend TypeScript models (camelCase).
  */
 
-import type { Order, OrderStatus, Product, Role, User } from "@/types";
+import type {
+  BatchStatus,
+  DeliveryBatch,
+  Driver,
+  DriverStatus,
+  Order,
+  OrderStatus,
+  Product,
+  Role,
+  User,
+  Vehicle,
+} from "@/types";
 
 const API_BASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
@@ -67,12 +78,100 @@ export interface ApiOrder {
   updated_at?: string;
 }
 
+export interface ApiVehicle {
+  id: string;
+  name: string;
+  registration: string;
+  capacity: number;
+  status: string;
+  base_location: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ApiDriver {
+  id: string;
+  name: string;
+  phone: string;
+  license: string;
+  status: string;
+  base_location: string;
+  vehicle_id?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ApiDeliveryBatch {
+  id: string;
+  order_ids: string[];
+  pickup_location: string;
+  delivery_location?: string | null;
+  delivery_stops: string[];
+  total_quantity: number;
+  vehicle_id?: string | null;
+  driver_id?: string | null;
+  status: string;
+  scheduled_at?: string | null;
+  transportation_charge?: number | null;
+  distance_km?: number | null;
+  eta_minutes?: number | null;
+  picked_up_at?: string | null;
+  delivered_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
 /* ---------------- Bidirectional Mappers ---------------- */
+
+export function mapApiVehicleToFrontend(v: ApiVehicle): Vehicle {
+  return {
+    id: v.id,
+    name: v.name,
+    registration: v.registration,
+    capacity: v.capacity,
+    status: (v.status as Vehicle["status"]) || "Available",
+    base: v.base_location,
+  };
+}
+
+export function mapApiDriverToFrontend(d: ApiDriver): Driver {
+  return {
+    id: d.id,
+    name: d.name,
+    phone: d.phone,
+    license: d.license,
+    status: (d.status as DriverStatus) || "Available",
+    base: d.base_location,
+    vehicleId: d.vehicle_id || undefined,
+  };
+}
+
+export function mapApiBatchToFrontend(b: ApiDeliveryBatch): DeliveryBatch {
+  return {
+    id: b.id,
+    orderIds: b.order_ids || [],
+    pickup: b.pickup_location,
+    deliveryLocation: b.delivery_location || undefined,
+    stops: b.delivery_stops || [],
+    totalQuantity: b.total_quantity,
+    vehicleId: b.vehicle_id || undefined,
+    driverId: b.driver_id || undefined,
+    status: (b.status as BatchStatus) || "Planned",
+    scheduledAt: b.scheduled_at || undefined,
+    transportationCharge: b.transportation_charge ? Number(b.transportation_charge) : undefined,
+    distanceKm: b.distance_km || 0,
+    etaMinutes: b.eta_minutes || 0,
+    pickedUpAt: b.picked_up_at || undefined,
+    deliveredAt: b.delivered_at || undefined,
+    createdAt: b.created_at || new Date().toISOString(),
+  };
+}
 
 export function mapApiProductToFrontend(p: ApiProduct): Product {
   return {
     id: p.id,
     name: p.name,
+
     category: p.category as Product["category"],
     quantity: p.quantity,
     unit: p.unit,
@@ -728,7 +827,174 @@ export const matchingApi = {
   },
 };
 
+/* ---------------- Vehicles & Fleet API ---------------- */
+
+export const vehiclesApi = {
+  async list(status?: string): Promise<Vehicle[]> {
+    const qs = status ? `?status=${encodeURIComponent(status)}` : "";
+    const res = await request<ApiVehicle[]>(`/vehicles${qs}`);
+    return res.map(mapApiVehicleToFrontend);
+  },
+
+  async get(id: string): Promise<Vehicle> {
+    const res = await request<ApiVehicle>(`/vehicles/${encodeURIComponent(id)}`);
+    return mapApiVehicleToFrontend(res);
+  },
+};
+
+/* ---------------- Drivers API ---------------- */
+
+export const driversApi = {
+  async list(status?: string): Promise<Driver[]> {
+    const qs = status ? `?status=${encodeURIComponent(status)}` : "";
+    const res = await request<ApiDriver[]>(`/drivers${qs}`);
+    return res.map(mapApiDriverToFrontend);
+  },
+
+  async get(id: string): Promise<Driver> {
+    const res = await request<ApiDriver>(`/drivers/${encodeURIComponent(id)}`);
+    return mapApiDriverToFrontend(res);
+  },
+};
+
+/* ---------------- Delivery Batches API (Phase 9) ---------------- */
+
+export interface CreateBatchInput {
+  id?: string;
+  orderIds: string[];
+  pickupLocation?: string;
+  deliveryLocation?: string;
+  deliveryStops?: string[];
+  vehicleId?: string;
+  driverId?: string;
+  scheduledAt?: string;
+  transportationCharge?: number;
+  status?: BatchStatus;
+}
+
+export interface UpdateBatchInput {
+  vehicleId?: string;
+  driverId?: string;
+  status?: string;
+  scheduledAt?: string;
+  orderIds?: string[];
+}
+
+export interface ApiPickupOTPGenerate {
+  batch_id: string;
+  message: string;
+  demo_otp: string;
+  expires_at: string;
+}
+
+export interface ApiPickupOTPVerify {
+  batch_id: string;
+  status: string;
+  message: string;
+  picked_up_at: string;
+}
+
+export interface ApiBatchDeliveryOTPVerify {
+  batch_id: string;
+  status: string;
+  message: string;
+  delivered_at: string;
+  driver_payout_status: string;
+}
+
+export const deliveryBatchesApi = {
+  async list(params?: {
+    status?: string;
+    driver_id?: string;
+    vehicle_id?: string;
+    pickup_location?: string;
+  }): Promise<DeliveryBatch[]> {
+    const query = new URLSearchParams();
+    if (params?.status) query.set("status", params.status);
+    if (params?.driver_id) query.set("driver_id", params.driver_id);
+    if (params?.vehicle_id) query.set("vehicle_id", params.vehicle_id);
+    if (params?.pickup_location) query.set("pickup_location", params.pickup_location);
+    const qs = query.toString() ? `?${query.toString()}` : "";
+    const res = await request<ApiDeliveryBatch[]>(`/delivery-batches${qs}`);
+    return res.map(mapApiBatchToFrontend);
+  },
+
+  async get(id: string): Promise<DeliveryBatch> {
+    const res = await request<ApiDeliveryBatch>(`/delivery-batches/${encodeURIComponent(id)}`);
+    return mapApiBatchToFrontend(res);
+  },
+
+  async getEligibleOrders(): Promise<Order[]> {
+    const res = await request<ApiOrder[]>("/delivery-batches/eligible-orders");
+    return res.map(mapApiOrderToFrontend);
+  },
+
+  async create(input: CreateBatchInput): Promise<DeliveryBatch> {
+    const payload = {
+      id: input.id,
+      order_ids: input.orderIds,
+      pickup_location: input.pickupLocation,
+      delivery_location: input.deliveryLocation,
+      delivery_stops: input.deliveryStops,
+      vehicle_id: input.vehicleId,
+      driver_id: input.driverId,
+      scheduled_at: input.scheduledAt,
+      transportation_charge: input.transportationCharge,
+      status: input.status,
+    };
+    const res = await request<ApiDeliveryBatch>("/delivery-batches", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    return mapApiBatchToFrontend(res);
+  },
+
+  async update(id: string, patch: UpdateBatchInput): Promise<DeliveryBatch> {
+    const payload: Record<string, unknown> = {};
+    if (patch.vehicleId !== undefined) payload.vehicle_id = patch.vehicleId;
+    if (patch.driverId !== undefined) payload.driver_id = patch.driverId;
+    if (patch.status !== undefined) payload.status = patch.status;
+    if (patch.scheduledAt !== undefined) payload.scheduled_at = patch.scheduledAt;
+    if (patch.orderIds !== undefined) payload.order_ids = patch.orderIds;
+
+    const res = await request<ApiDeliveryBatch>(`/delivery-batches/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+    return mapApiBatchToFrontend(res);
+  },
+
+  async delete(id: string): Promise<void> {
+    await request<void>(`/delivery-batches/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+  },
+
+  async generatePickupOtp(id: string): Promise<ApiPickupOTPGenerate> {
+    return request<ApiPickupOTPGenerate>(`/delivery-batches/${encodeURIComponent(id)}/pickup-otp/generate`, {
+      method: "POST",
+    });
+  },
+
+  async verifyPickupOtp(id: string, otp: string): Promise<ApiPickupOTPVerify> {
+    return request<ApiPickupOTPVerify>(`/delivery-batches/${encodeURIComponent(id)}/pickup-otp/verify`, {
+      method: "POST",
+      body: JSON.stringify({ otp }),
+    });
+  },
+
+  async verifyDeliveryOtp(id: string, otp: string, orderId?: string): Promise<ApiBatchDeliveryOTPVerify> {
+    const payload: { otp: string; order_id?: string } = { otp };
+    if (orderId) payload.order_id = orderId;
+    return request<ApiBatchDeliveryOTPVerify>(`/delivery-batches/${encodeURIComponent(id)}/delivery-otp/verify`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+};
+
 /* ---------------- Health Check ---------------- */
+
 
 export async function checkBackendHealth(): Promise<boolean> {
   try {

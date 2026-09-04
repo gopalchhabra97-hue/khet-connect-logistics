@@ -5,10 +5,24 @@ export type OrderStatus =
   | "Accepted"
   | "Rejected"
   | "Preparing"
+  | "Ready for Delivery"
+  | "Driver Assigned"
+  | "Pickup"
+  | "Picked Up"
   | "In Transit"
-  | "Delivered";
+  | "Out for Delivery"
+  | "Delivered"
+  | "Cancelled";
 
-export type BatchStatus = "Planned" | "Assigned" | "Picked Up" | "In Transit" | "Delivered";
+export type BatchStatus =
+  | "Planned"
+  | "Assigned"
+  | "Pickup"
+  | "Picked Up"
+  | "In Transit"
+  | "Out for Delivery"
+  | "Delivered"
+  | "Cancelled";
 
 export type DriverStatus = "Available" | "Assigned" | "On Route";
 
@@ -77,15 +91,21 @@ export interface DeliveryBatch {
   id: string;
   orderIds: string[];
   pickup: string;
+  deliveryLocation?: string;
   stops: string[];
   totalQuantity: number;
   vehicleId?: string;
   driverId?: string;
   status: BatchStatus;
+  scheduledAt?: string;
+  transportationCharge?: number;
   distanceKm: number;
   etaMinutes: number;
+  pickedUpAt?: string;
+  deliveredAt?: string;
   createdAt: string;
 }
+
 
 export interface AppNotification {
   id: string;

@@ -298,27 +298,102 @@ class DriverResponse(DriverBase):
 # DeliveryBatch Schemas
 class DeliveryBatchBase(BaseModel):
     order_ids: List[str]
+    pickup_location: Optional[str] = None
+    delivery_location: Optional[str] = None
+    delivery_stops: Optional[List[str]] = None
+    total_quantity: Optional[int] = None
+    vehicle_id: Optional[str] = None
+    driver_id: Optional[str] = None
+    status: Optional[str] = "Planned"
+    scheduled_at: Optional[datetime] = None
+    transportation_charge: Optional[float] = None
+    distance_km: Optional[float] = None
+    eta_minutes: Optional[int] = None
+
+
+class DeliveryBatchCreate(BaseModel):
+    id: Optional[str] = None
+    order_ids: List[str]
+    pickup_location: Optional[str] = None
+    delivery_location: Optional[str] = None
+    delivery_stops: Optional[List[str]] = None
+    total_quantity: Optional[int] = None
+    vehicle_id: Optional[str] = None
+    driver_id: Optional[str] = None
+    status: Optional[str] = None
+    scheduled_at: Optional[datetime] = None
+    transportation_charge: Optional[float] = None
+    distance_km: Optional[float] = None
+    eta_minutes: Optional[int] = None
+
+
+class DeliveryBatchUpdate(BaseModel):
+    vehicle_id: Optional[str] = None
+    driver_id: Optional[str] = None
+    status: Optional[str] = None
+    scheduled_at: Optional[datetime] = None
+    order_ids: Optional[List[str]] = None
+    pickup_location: Optional[str] = None
+    delivery_location: Optional[str] = None
+
+
+class DeliveryBatchStatusUpdate(BaseModel):
+    status: str
+
+
+class DeliveryBatchResponse(BaseModel):
+    id: str
+    order_ids: List[str]
     pickup_location: str
+    delivery_location: Optional[str] = None
     delivery_stops: List[str]
     total_quantity: int
     vehicle_id: Optional[str] = None
     driver_id: Optional[str] = None
     status: str
+    scheduled_at: Optional[datetime] = None
+    transportation_charge: Optional[float] = None
     distance_km: Optional[float] = None
     eta_minutes: Optional[int] = None
-
-
-class DeliveryBatchCreate(DeliveryBatchBase):
-    id: str
-
-
-class DeliveryBatchResponse(DeliveryBatchBase):
-    id: str
+    picked_up_at: Optional[datetime] = None
+    delivered_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class PickupOTPGenerateResponse(BaseModel):
+    batch_id: str
+    message: str
+    demo_otp: str
+    expires_at: datetime
+
+
+class PickupOTPVerifyRequest(BaseModel):
+    otp: str
+
+
+class PickupOTPVerifyResponse(BaseModel):
+    batch_id: str
+    status: str
+    message: str
+    picked_up_at: datetime
+
+
+class BatchDeliveryOTPVerifyRequest(BaseModel):
+    otp: str
+    order_id: Optional[str] = None
+
+
+class BatchDeliveryOTPVerifyResponse(BaseModel):
+    batch_id: str
+    status: str
+    message: str
+    delivered_at: datetime
+    driver_payout_status: str
+
 
 
 # Forecast Schemas

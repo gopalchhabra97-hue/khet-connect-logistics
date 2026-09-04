@@ -131,8 +131,9 @@ def main():
             "category": "Vegetables",
             "quantity": 200,
             "unit": "kg",
-            "price": 24.0,
+            "price": 18.0,
             "location": "Ludhiana",
+
             "seller_id": farmer_id,
             "verified": False
         }, token=farmer_token)
@@ -168,8 +169,9 @@ def main():
             "category": "Vegetables",
             "quantity": 10,
             "unit": "kg",
-            "price": 20.0,
+            "price": 17.0,
             "location": "Patiala",
+
             "seller_id": farmer_id,
             "available": False
         }, token=farmer_token)
