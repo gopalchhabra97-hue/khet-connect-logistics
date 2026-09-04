@@ -9,6 +9,7 @@ import type {
   BatchStatus,
   CropQualityFactorScores,
   CropQualityResult,
+  CropQualityStatus,
   DeliveryBatch,
   Driver,
   DriverStatus,
@@ -75,15 +76,29 @@ export interface ApiCropQualityFactorScores {
 export interface ApiCropQualityResponse {
   id: string;
   product_id?: string | null;
+  farmer_id?: string | null;
   image_url?: string | null;
   crop: string;
   total_score: number;
   grade: string;
+  confidence?: number | null;
+  model_name?: string | null;
+  model_version?: string | null;
+  provider?: string | null;
   factor_scores: ApiCropQualityFactorScores;
   detected_issues: string[];
   recommendation?: string | null;
   analysis_mode: string;
   created_at: string;
+}
+
+export interface ApiCropQualityStatusResponse {
+  ai_available: boolean;
+  model_name: string;
+  model_version: string;
+  provider: string;
+  supported_crops: string[];
+  demo_fallback_available: boolean;
 }
 
 export interface ApiOrder {
@@ -254,10 +269,15 @@ export function mapApiQualityToFrontend(q: ApiCropQualityResponse): CropQualityR
   return {
     id: q.id,
     productId: q.product_id,
+    farmerId: q.farmer_id,
     imageUrl: q.image_url,
     crop: q.crop,
     totalScore: q.total_score,
     grade: q.grade,
+    confidence: q.confidence,
+    modelName: q.model_name,
+    modelVersion: q.model_version,
+    provider: q.provider,
     factorScores: {
       freshness: f.freshness ?? 0,
       colorAppearance: f.color_appearance ?? 0,
@@ -1053,6 +1073,18 @@ export const deliveryBatchesApi = {
 /* ---------------- Crop Quality API ---------------- */
 
 export const qualityApi = {
+  async getStatus(): Promise<CropQualityStatus> {
+    const res = await request<ApiCropQualityStatusResponse>("/quality/status");
+    return {
+      aiAvailable: res.ai_available,
+      modelName: res.model_name,
+      modelVersion: res.model_version,
+      provider: res.provider,
+      supportedCrops: res.supported_crops,
+      demoFallbackAvailable: res.demo_fallback_available,
+    };
+  },
+
   async analyze(formData: FormData): Promise<CropQualityResult> {
     const res = await request<ApiCropQualityResponse>("/quality/analyze", {
       method: "POST",

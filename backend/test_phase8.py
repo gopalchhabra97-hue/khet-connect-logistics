@@ -320,8 +320,8 @@ def main():
 
     finally:
         print("\n--- Cleaning up temporary test records ---")
-        load_dotenv("backend/.env")
-        conn = psycopg2.connect(os.getenv("DATABASE_URL"))
+        load_dotenv()
+        conn = psycopg2.connect(os.getenv("DATABASE_URL", "postgresql://postgres:REDACTED_PASSWORD@localhost:5432/khetsetu"))
         cur = conn.cursor()
 
         for pid in created_product_ids:

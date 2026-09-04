@@ -1,4 +1,4 @@
-import { BadgeCheck, Clock, Flame, MapPin, ShieldCheck, Sprout, TrendingUp, Award } from "lucide-react";
+import { BadgeCheck, Clock, Cpu, Flame, MapPin, ShieldCheck, Sprout, TrendingUp, Award } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -113,9 +113,9 @@ export function ProductCard({
         {/* AI/Visual Crop Quality Assessment Row */}
         <div className="mt-2 flex items-center justify-between rounded-md border border-emerald-500/25 bg-emerald-50/70 dark:bg-emerald-950/25 px-2.5 py-1.5 text-[11px]">
           <span className="flex items-center gap-1.5 font-medium text-emerald-900 dark:text-emerald-300">
-            <Award className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <Cpu className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>
-              Visual Quality:{" "}
+              AI Quality Available:{" "}
               <strong className="font-bold">
                 Grade {qualitySummary.grade} ({qualitySummary.score}/100)
               </strong>

@@ -14,6 +14,7 @@ import {
   AlertTriangle,
   Bot,
   CheckCircle2,
+  Cpu,
   Info,
   Loader2,
   ShieldAlert,
@@ -199,7 +200,7 @@ export function QualityGradingModal({
                       </span>
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <h4 className="text-lg font-bold text-foreground">
                           Grade {quality.grade} Quality
                         </h4>
@@ -209,7 +210,7 @@ export function QualityGradingModal({
                         >
                           {quality.analysisMode === "ai" ? (
                             <>
-                              <Sparkles className="size-3 text-amber-500" /> AI Vision Model
+                              <Cpu className="size-3 text-emerald-600 dark:text-emerald-400" /> REAL AI COMPUTER VISION
                             </>
                           ) : (
                             <>
@@ -217,9 +218,22 @@ export function QualityGradingModal({
                             </>
                           )}
                         </Badge>
+                        {quality.confidence != null && (
+                          <Badge
+                            variant="outline"
+                            className="text-[11px] font-semibold border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                          >
+                            {Math.round(quality.confidence * 100)}% Confidence
+                          </Badge>
+                        )}
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Certified surface visual inspection recorded on{" "}
+                        {quality.modelName ? (
+                          <span className="font-mono text-[11px] text-foreground/80 font-medium">
+                            Model: {quality.modelName} {quality.modelVersion ? `(${quality.modelVersion})` : ""} •{" "}
+                          </span>
+                        ) : null}
+                        Surface inspection recorded on{" "}
                         {new Date(quality.createdAt).toLocaleDateString("en-IN", {
                           day: "numeric",
                           month: "short",
@@ -372,7 +386,7 @@ export function QualityGradingModal({
             <div className="rounded-lg border border-border bg-muted/40 p-3 text-[11px] text-muted-foreground flex items-start gap-2">
               <ShieldAlert className="size-4 text-muted-foreground shrink-0 mt-0.5" />
               <p>
-                <strong>Visual Quality Assessment Notice:</strong> Evaluation is conducted strictly on external visual criteria (surface discoloration, shape, bruising, fungal marks, size uniformity, and physical blemishes). Image analysis does not evaluate internal moisture content, chemical pesticide residue, or nutritional density.
+                <strong>AI-assisted visual assessment — not a laboratory certification.</strong> Evaluation is conducted strictly on external visual criteria (surface discoloration, shape, bruising, fungal marks, size uniformity, and physical blemishes). Image analysis does not evaluate internal moisture content, chemical pesticide residue, or nutritional density.
               </p>
             </div>
           </div>

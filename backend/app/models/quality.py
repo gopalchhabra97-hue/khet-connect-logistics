@@ -16,7 +16,12 @@ class CropQualityResult(Base):
     detected_issues = Column(JSON, nullable=False)
     recommendation = Column(Text, nullable=True)
     analysis_mode = Column(String(20), nullable=False, default="demo")  # "ai" or "demo"
+    farmer_id = Column(String(50), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    confidence = Column(Float, nullable=True)
+    model_name = Column(String(100), nullable=True)
+    model_version = Column(String(50), nullable=True)
     created_at = Column(DateTime, server_default=func.now())
 
     def __repr__(self):
-        return f"<CropQualityResult(id={self.id}, crop={self.crop}, grade={self.grade}, total_score={self.total_score})>"
+        return f"<CropQualityResult(id={self.id}, crop={self.crop}, grade={self.grade}, total_score={self.total_score}, mode={self.analysis_mode})>"
+

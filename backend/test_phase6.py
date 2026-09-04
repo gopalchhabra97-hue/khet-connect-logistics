@@ -73,8 +73,8 @@ def main():
     test_order_id_2 = "#TEST-SETTLE-02"
 
     try:
-        load_dotenv("backend/.env")
-        conn = psycopg2.connect(os.getenv("DATABASE_URL"))
+        load_dotenv()
+        conn = psycopg2.connect(os.getenv("DATABASE_URL", "postgresql://postgres:REDACTED_PASSWORD@localhost:5432/khetsetu"))
         cur = conn.cursor()
 
         # 1. Create temporary test orders
@@ -225,8 +225,8 @@ def main():
     finally:
         # Cleanup temporary records
         print("\n--- Cleaning up temporary test records ---")
-        load_dotenv("backend/.env")
-        conn = psycopg2.connect(os.getenv("DATABASE_URL"))
+        load_dotenv()
+        conn = psycopg2.connect(os.getenv("DATABASE_URL", "postgresql://postgres:REDACTED_PASSWORD@localhost:5432/khetsetu"))
         cur = conn.cursor()
 
         for pid in created_payout_ids:

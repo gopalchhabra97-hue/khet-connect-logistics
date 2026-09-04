@@ -127,8 +127,8 @@ def main():
 
         # 11. Live AI model execution test with sufficient historical order data
         print("\n--- Testing Live AI Model Generation (Simulating sufficient order points) ---")
-        load_dotenv("backend/.env")
-        conn = psycopg2.connect(os.getenv("DATABASE_URL"))
+        load_dotenv()
+        conn = psycopg2.connect(os.getenv("DATABASE_URL", "postgresql://postgres:REDACTED_PASSWORD@localhost:5432/khetsetu"))
         cur = conn.cursor()
 
         # Insert a temporary test product
@@ -170,8 +170,8 @@ def main():
     finally:
         # Cleanup temporary records
         print("\n--- Cleaning up temporary AI test records ---")
-        load_dotenv("backend/.env")
-        conn = psycopg2.connect(os.getenv("DATABASE_URL"))
+        load_dotenv()
+        conn = psycopg2.connect(os.getenv("DATABASE_URL", "postgresql://postgres:REDACTED_PASSWORD@localhost:5432/khetsetu"))
         cur = conn.cursor()
 
         for oid in created_order_ids:

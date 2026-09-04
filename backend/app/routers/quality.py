@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional
 
+import cv2
+import numpy as np
 from fastapi import (
     APIRouter,
     Depends,
@@ -23,8 +25,11 @@ from app.db.database import get_db_session
 from app.models.product import Product
 from app.models.quality import CropQualityResult
 from app.models.user import User
-from app.schemas import CropQualityFactorScores, CropQualityResponse
-from app.services.quality_grading_service import get_quality_grading_service
+from app.schemas import CropQualityFactorScores, CropQualityResponse, CropQualityStatusResponse
+from app.services.quality_grading_service import (
+    get_quality_grading_service,
+    LocalComputerVisionProvider,
+)
 
 router = APIRouter(prefix="/quality", tags=["Crop Quality"])
 
@@ -43,10 +48,15 @@ def _to_response(item: CropQualityResult) -> CropQualityResponse:
     return CropQualityResponse(
         id=item.id,
         product_id=item.product_id,
+        farmer_id=item.farmer_id,
         image_url=item.image_url,
         crop=item.crop,
         total_score=float(item.total_score),
         grade=item.grade,
+        confidence=float(item.confidence) if item.confidence is not None else None,
+        model_name=item.model_name,
+        model_version=item.model_version,
+        provider="local_cv" if item.analysis_mode == "ai" else "deterministic_demo",
         factor_scores=CropQualityFactorScores(
             freshness=float(factors.get("freshness", 0.0)),
             color_appearance=float(factors.get("color_appearance", 0.0)),
@@ -85,7 +95,7 @@ async def analyze_crop_quality(
             detail=f"Unsupported image type: '{content_type}'. Allowed types: JPEG, PNG, WEBP.",
         )
 
-    # 2. Read and validate file size
+    # 2. Read and validate file size & dimensions
     image_bytes = await file.read()
     if len(image_bytes) == 0:
         raise HTTPException(
@@ -96,6 +106,21 @@ async def analyze_crop_quality(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Image file size exceeds maximum limit of 5MB.",
+        )
+
+    # Validate image decoding & minimum dimensions (min 64x64)
+    nparr = np.frombuffer(image_bytes, np.uint8)
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    if img is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Corrupted or invalid image file. Unable to decode image.",
+        )
+    h, w = img.shape[:2]
+    if h < 64 or w < 64:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Image resolution too low ({w}x{h}px). Minimum required dimensions are 64x64 pixels.",
         )
 
     # 3. Resolve and validate Product if product_id is provided
@@ -144,21 +169,32 @@ async def analyze_crop_quality(
 
     # 5. Run Quality Grading Service
     service = get_quality_grading_service()
-    grading_result = await service.analyze(
-        image_bytes=image_bytes,
-        crop_name=crop_name,
-        filename=file.filename,
-    )
+    try:
+        grading_result = await service.analyze(
+            image_bytes=image_bytes,
+            crop_name=crop_name,
+            filename=file.filename,
+        )
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(ve),
+        )
 
     # 6. Save result to DB
+    farmer_id = current_user.id if current_user.role == "farmer" else (product.seller_id if product else current_user.id)
     result_id = f"CQR-{uuid.uuid4().hex[:8].upper()}"
     db_result = CropQualityResult(
         id=result_id,
         product_id=product.id if product else None,
+        farmer_id=farmer_id,
         image_url=relative_image_url,
         crop=grading_result.crop,
         total_score=grading_result.total_score,
         grade=grading_result.grade,
+        confidence=grading_result.confidence,
+        model_name=grading_result.model_name,
+        model_version=grading_result.model_version,
         factor_scores=grading_result.factor_scores,
         detected_issues=grading_result.detected_issues,
         recommendation=grading_result.recommendation,
@@ -174,6 +210,23 @@ async def analyze_crop_quality(
     db.refresh(db_result)
 
     return _to_response(db_result)
+
+
+@router.get("/status", response_model=CropQualityStatusResponse)
+def get_quality_status():
+    """Returns status and metadata for the crop quality computer vision grading engine."""
+    provider = get_quality_grading_service()
+    is_ai = isinstance(provider, LocalComputerVisionProvider)
+    return CropQualityStatusResponse(
+        ai_available=is_ai,
+        model_name=getattr(provider, "MODEL_NAME", getattr(provider, "model_name", "LocalComputerVision")),
+        model_version=getattr(provider, "MODEL_VERSION", getattr(provider, "model_version", "1.0.0")),
+        provider=getattr(provider, "PROVIDER_ID", type(provider).__name__),
+        supported_crops=[
+            "Tomato", "Potato", "Onion", "Apple", "Guava", "Wheat", "Rice", "Green Peas"
+        ],
+        demo_fallback_available=True,
+    )
 
 
 @router.get("/{product_id}", response_model=CropQualityResponse)

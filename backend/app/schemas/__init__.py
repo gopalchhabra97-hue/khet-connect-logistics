@@ -559,10 +559,15 @@ class CropQualityFactorScores(BaseModel):
 class CropQualityResponse(BaseModel):
     id: str
     product_id: Optional[str] = None
+    farmer_id: Optional[str] = None
     image_url: Optional[str] = None
     crop: str
     total_score: float = Field(..., ge=0, le=100, description="Total visual quality score out of 100")
     grade: str = Field(..., description="Grade: A+, A, B, C, or D")
+    confidence: Optional[float] = Field(None, description="Model prediction confidence (0.0 - 1.0)")
+    model_name: Optional[str] = Field(None, description="Active computer vision model name")
+    model_version: Optional[str] = Field(None, description="Active model version")
+    provider: Optional[str] = Field(None, description="Quality grading provider")
     factor_scores: CropQualityFactorScores
     detected_issues: List[str]
     recommendation: Optional[str] = None
@@ -571,4 +576,14 @@ class CropQualityResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class CropQualityStatusResponse(BaseModel):
+    ai_available: bool
+    model_name: str
+    model_version: str
+    provider: str
+    supported_crops: List[str]
+    demo_fallback_available: bool
+
 

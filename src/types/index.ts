@@ -137,14 +137,29 @@ export interface CropQualityFactorScores {
 export interface CropQualityResult {
   id: string;
   productId?: string | null;
+  farmerId?: string | null;
   imageUrl?: string | null;
   crop: string;
   totalScore: number;
   grade: "A+" | "A" | "B" | "C" | "D" | string;
+  confidence?: number | null;
+  modelName?: string | null;
+  modelVersion?: string | null;
+  provider?: string | null;
   factorScores: CropQualityFactorScores;
   detectedIssues: string[];
   recommendation?: string | null;
   analysisMode: "ai" | "demo" | string;
   createdAt: string;
 }
+
+export interface CropQualityStatus {
+  aiAvailable: boolean;
+  modelName: string;
+  modelVersion: string;
+  provider: string;
+  supportedCrops: string[];
+  demoFallbackAvailable: boolean;
+}
+
 
